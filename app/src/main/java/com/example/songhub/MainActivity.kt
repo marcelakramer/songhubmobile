@@ -10,7 +10,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.songhub.ui.screens.LoginScreen
 import com.example.songhub.ui.theme.SonghubTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,9 +21,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             SonghubTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
+                Scaffold(modifier = Modifier.fillMaxSize(), containerColor = Color(0xFF040723)) { innerPadding ->
+                    LoginScreen(
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
@@ -30,18 +31,10 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
 
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
     SonghubTheme {
-        Greeting("Android")
     }
 }
