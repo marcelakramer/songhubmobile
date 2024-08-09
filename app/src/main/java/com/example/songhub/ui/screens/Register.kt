@@ -39,6 +39,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
@@ -118,7 +119,7 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                         ),
                     placeholder = { Text("Email", color = Color(0xFF5A5A5A)) },
                     label = null,
-                    modifier = Modifier.fillMaxWidth().height(55.dp)
+                    modifier = Modifier.fillMaxWidth().height(55.dp),
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedTextField(
@@ -135,7 +136,8 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                         ),
                     placeholder = { Text("Password", color = Color(0xFF5A5A5A)) },
                     label = null,
-                    modifier = Modifier.fillMaxWidth().height(55.dp)
+                    modifier = Modifier.fillMaxWidth().height(55.dp),
+                    visualTransformation = PasswordVisualTransformation()
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedTextField(
@@ -152,7 +154,8 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                         ),
                     placeholder = { Text("Confirm Password", color = Color(0xFF5A5A5A)) },
                     label = null,
-                    modifier = Modifier.fillMaxWidth().height(55.dp)
+                    modifier = Modifier.fillMaxWidth().height(55.dp),
+                    visualTransformation = PasswordVisualTransformation()
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 Row (modifier= Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.Center) {
