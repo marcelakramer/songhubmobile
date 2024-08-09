@@ -24,7 +24,7 @@ fun MainScreen(modifier: Modifier = Modifier) {
         containerColor = Color(0xFF040723),
         topBar = {
             TopAppBar(
-                modifier = modifier.padding(8.dp, 4.dp),
+                modifier = Modifier.padding(8.dp, 4.dp),
                 title = {
                     Text(
                         text = "Home",
@@ -39,7 +39,7 @@ fun MainScreen(modifier: Modifier = Modifier) {
                         Icon(
                             imageVector = Icons.Default.AccountCircle,
                             contentDescription = "Profile",
-                            modifier = modifier.size(30.dp),
+                            modifier = Modifier.size(30.dp),
                             tint = Color(0xFFFFFFFF)
                         )
                     }
@@ -49,11 +49,11 @@ fun MainScreen(modifier: Modifier = Modifier) {
         },
         bottomBar = {
             BottomAppBar(
-                modifier = modifier.height(90.dp),
+                modifier = Modifier.height(90.dp),
                 containerColor = Color(0xFF040723),
                 content = {
                     Row(
-                        modifier = modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceAround,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -61,7 +61,7 @@ fun MainScreen(modifier: Modifier = Modifier) {
                             Icon(
                                 painter = painterResource(R.drawable.home),
                                 contentDescription = "Home",
-                                modifier = modifier.size(30.dp),
+                                modifier = Modifier.size(30.dp),
                                 tint = Color(0xFFFFFFFF)
                             )
                         }
@@ -69,7 +69,7 @@ fun MainScreen(modifier: Modifier = Modifier) {
                             Icon(
                                 painter = painterResource(R.drawable.add_song),
                                 contentDescription = "Add Song",
-                                modifier = modifier.size(30.dp),
+                                modifier = Modifier.size(30.dp),
                                 tint = Color(0xFFFFFFFF)
                             )
                         }
@@ -77,7 +77,7 @@ fun MainScreen(modifier: Modifier = Modifier) {
                             Icon(
                                 painter = painterResource(R.drawable.favorites),
                                 contentDescription = "Favorites",
-                                modifier = modifier.size(30.dp),
+                                modifier = Modifier.size(30.dp),
                                 tint = Color(0xFFFFFFFF)
                             )
                         }
@@ -85,7 +85,7 @@ fun MainScreen(modifier: Modifier = Modifier) {
                             Icon(
                                 painter = painterResource(R.drawable.search),
                                 contentDescription = "Search online",
-                                modifier = modifier.size(30.dp),
+                                modifier = Modifier.size(30.dp),
                                 tint = Color(0xFFFFFFFF)
                             )
                         }
@@ -95,20 +95,20 @@ fun MainScreen(modifier: Modifier = Modifier) {
         }
     ) { innerPadding ->
         Box(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxSize()
                 .padding(innerPadding),
             contentAlignment = Alignment.Center
         ) {
             Card(
-                modifier = modifier
+                modifier = Modifier
                     .fillMaxSize()
                     .padding(20.dp, 10.dp),
                 colors = CardDefaults.cardColors(containerColor = Color(0xFF060E43)),
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Column(
-                    modifier = modifier
+                    modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 70.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -128,9 +128,9 @@ fun MainScreen(modifier: Modifier = Modifier) {
                         fontWeight = FontWeight(700),
                         color = Color(0xFFFFFFFF)
                     )
-                    Spacer(modifier = modifier.height(80.dp))
+                    Spacer(modifier = Modifier.height(80.dp))
                     Image(
-                        modifier = modifier.size(220.dp),
+                        modifier = Modifier.size(220.dp),
                         painter = painterResource(R.drawable.logo),
                         contentDescription = "Logo"
                     )
