@@ -101,7 +101,7 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                         ),
                     placeholder = { Text("Username", color = Color(0xFF5A5A5A)) },
                     label = null,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().height(55.dp)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedTextField(
@@ -118,7 +118,7 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                         ),
                     placeholder = { Text("Email", color = Color(0xFF5A5A5A)) },
                     label = null,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().height(55.dp)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedTextField(
@@ -135,7 +135,7 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                         ),
                     placeholder = { Text("Password", color = Color(0xFF5A5A5A)) },
                     label = null,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().height(55.dp)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedTextField(
@@ -152,7 +152,7 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                         ),
                     placeholder = { Text("Confirm Password", color = Color(0xFF5A5A5A)) },
                     label = null,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().height(55.dp)
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 Row (modifier= Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.Center) {
