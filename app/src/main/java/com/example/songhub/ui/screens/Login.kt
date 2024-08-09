@@ -75,6 +75,7 @@ fun LoginScreen(modifier: Modifier = Modifier) {
                             append("songhub")
                         }
                     },
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.W300,
                     color = Color(0xFFFFFFFF)
                 )
