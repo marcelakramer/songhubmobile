@@ -97,7 +97,7 @@ fun MainScreen(modifier: Modifier = Modifier) {
         Box(
             modifier = modifier
                 .fillMaxSize()
-                .padding(innerPadding), // Aplicando o padding fornecido pelo Scaffold
+                .padding(innerPadding),
             contentAlignment = Alignment.Center
         ) {
             Card(
