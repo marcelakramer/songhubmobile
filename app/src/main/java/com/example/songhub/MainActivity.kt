@@ -11,7 +11,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.songhub.ui.screens.LoginScreen
+import com.example.songhub.ui.screens.MainScreen
+import com.example.songhub.ui.screens.RegisterScreen
 import com.example.songhub.ui.theme.SonghubTheme
 
 class MainActivity : ComponentActivity() {
@@ -21,9 +26,27 @@ class MainActivity : ComponentActivity() {
         setContent {
             SonghubTheme {
                 Scaffold(modifier = Modifier.fillMaxSize(), containerColor = Color(0xFF040723)) { innerPadding ->
-                    LoginScreen(
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                    val navController = rememberNavController()
+                    NavHost(navController = navController, startDestination = "login") {
+                        composable("login") {
+                            LoginScreen(modifier = Modifier.padding(innerPadding), onLoginClick = {
+                                navController.navigate("main")
+                            }, onRegisterClick = {
+                                navController.navigate("register")
+                            })
+                        }
+                        composable("register") {
+                            RegisterScreen(modifier = Modifier.padding(innerPadding), onLoginClick = {
+                                navController.navigate("login")
+                            },onRegisterClick = {
+                                navController.navigate("main")
+                            })
+                        }
+                        composable("main") {
+                            MainScreen(modifier = Modifier.padding(innerPadding))
+                        }
+
+                    }
                 }
             }
         }

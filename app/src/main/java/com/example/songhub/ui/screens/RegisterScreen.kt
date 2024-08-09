@@ -16,6 +16,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -35,6 +36,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -42,11 +44,13 @@ import com.example.songhub.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegisterScreen(modifier: Modifier = Modifier) {
+fun RegisterScreen(modifier: Modifier = Modifier, onLoginClick: () -> Unit, onRegisterClick: () -> Unit) {
     var username by rememberSaveable { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+    var revealPassword by remember { mutableStateOf(false)}
+    var revealConfirmPassword by remember { mutableStateOf(false)}
     Card(
         modifier = modifier
             .fillMaxSize()
@@ -126,9 +130,24 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                     value = password,
                     onValueChange = {password = it},
                     trailingIcon = {
-                        Icon(
-                            painterResource(R.drawable.eye),"show password"
-                        )
+                        if (revealPassword) {
+                            IconButton(
+                                onClick = {
+                                    revealPassword = false
+                                },
+                            ) {
+                                Icon(painter = painterResource(R.drawable.eye), contentDescription = null)
+                            }
+                        } else {
+                            IconButton(
+                                onClick = {
+                                    revealPassword = true
+                                },
+                            ) {
+
+                                Icon(painter = painterResource(R.drawable.eye_off), contentDescription = null)
+                            }
+                        }
                     },
                     shape = MaterialTheme.shapes.medium,
                     colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -144,16 +163,35 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(55.dp),
-                    visualTransformation = PasswordVisualTransformation()
+                    visualTransformation = if (revealPassword) {
+                        VisualTransformation.None
+                    } else {
+                        PasswordVisualTransformation()
+                    },
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedTextField(
                     value = confirmPassword,
                     onValueChange = {confirmPassword = it},
                     trailingIcon = {
-                        Icon(
-                            painterResource(R.drawable.eye),"show password"
-                        )
+                        if (revealConfirmPassword) {
+                            IconButton(
+                                onClick = {
+                                    revealConfirmPassword = false
+                                },
+                            ) {
+                                Icon(painter = painterResource(R.drawable.eye), contentDescription = null)
+                            }
+                        } else {
+                            IconButton(
+                                onClick = {
+                                    revealConfirmPassword = true
+                                },
+                            ) {
+
+                                Icon(painter = painterResource(R.drawable.eye_off), contentDescription = null)
+                            }
+                        }
                     },
                     shape = MaterialTheme.shapes.medium,
                     colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -169,12 +207,16 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(55.dp),
-                    visualTransformation = PasswordVisualTransformation()
+                    visualTransformation = if (revealConfirmPassword) {
+                        VisualTransformation.None
+                    } else {
+                        PasswordVisualTransformation()
+                    },
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 Row (modifier= Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.Center) {
                     Text(
-                        modifier = Modifier.clickable {  },
+                        modifier = Modifier.clickable { onLoginClick() },
                         text = buildAnnotatedString {
                             append("Already have an account? ")
                             withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
@@ -191,7 +233,16 @@ fun RegisterScreen(modifier: Modifier = Modifier) {
             Spacer(modifier = Modifier.height(30.dp))
             Column {
                 Button(
-                    onClick = {},
+                    onClick = {
+                        if (password == confirmPassword){
+                            onRegisterClick()
+                        }else{
+                            password = ""
+                            confirmPassword = ""
+                            username = ""
+                            email = ""
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(55.dp),
