@@ -1,5 +1,6 @@
 package com.example.songhub.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -9,7 +10,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -40,17 +43,21 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.songhub.DAO.UserDAO
 import com.example.songhub.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegisterScreen(modifier: Modifier = Modifier, onLoginClick: () -> Unit, onRegisterClick: () -> Unit) {
+fun RegisterScreen(modifier: Modifier = Modifier, onLoginClick: () -> Unit, onRegisterSuccess: () -> Unit) {
     var username by rememberSaveable { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var revealPassword by remember { mutableStateOf(false)}
     var revealConfirmPassword by remember { mutableStateOf(false)}
+
+    val userDAO = UserDAO()
+
     Card(
         modifier = modifier
             .fillMaxSize()
@@ -61,7 +68,8 @@ fun RegisterScreen(modifier: Modifier = Modifier, onLoginClick: () -> Unit, onRe
         Column(
             modifier = modifier
                 .padding(25.dp, 0.dp)
-                .fillMaxSize(),
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = AbsoluteAlignment.Left,
             verticalArrangement = Arrangement.Top
         ) {
@@ -90,7 +98,7 @@ fun RegisterScreen(modifier: Modifier = Modifier, onLoginClick: () -> Unit, onRe
                 Spacer(modifier = Modifier.height(36.dp))
                 OutlinedTextField(
                     value = username,
-                    onValueChange = {username = it},
+                    onValueChange = { username = it },
                     shape = MaterialTheme.shapes.medium,
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         focusedBorderColor = Color.Transparent,
@@ -98,8 +106,7 @@ fun RegisterScreen(modifier: Modifier = Modifier, onLoginClick: () -> Unit, onRe
                         containerColor = Color.White,
                         focusedTextColor = Color.Black,
                         unfocusedTextColor = Color.Black,
-
-                        ),
+                    ),
                     placeholder = { Text("Username", color = Color(0xFF5A5A5A)) },
                     label = null,
                     modifier = Modifier
@@ -109,7 +116,7 @@ fun RegisterScreen(modifier: Modifier = Modifier, onLoginClick: () -> Unit, onRe
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedTextField(
                     value = email,
-                    onValueChange = {email = it},
+                    onValueChange = { email = it },
                     shape = MaterialTheme.shapes.medium,
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         focusedBorderColor = Color.Transparent,
@@ -117,8 +124,7 @@ fun RegisterScreen(modifier: Modifier = Modifier, onLoginClick: () -> Unit, onRe
                         containerColor = Color.White,
                         focusedTextColor = Color.Black,
                         unfocusedTextColor = Color.Black,
-
-                        ),
+                    ),
                     placeholder = { Text("Email", color = Color(0xFF5A5A5A)) },
                     label = null,
                     modifier = Modifier
@@ -128,7 +134,7 @@ fun RegisterScreen(modifier: Modifier = Modifier, onLoginClick: () -> Unit, onRe
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedTextField(
                     value = password,
-                    onValueChange = {password = it},
+                    onValueChange = { password = it },
                     trailingIcon = {
                         if (revealPassword) {
                             IconButton(
@@ -144,7 +150,6 @@ fun RegisterScreen(modifier: Modifier = Modifier, onLoginClick: () -> Unit, onRe
                                     revealPassword = true
                                 },
                             ) {
-
                                 Icon(painter = painterResource(R.drawable.eye_off), contentDescription = null)
                             }
                         }
@@ -156,8 +161,7 @@ fun RegisterScreen(modifier: Modifier = Modifier, onLoginClick: () -> Unit, onRe
                         containerColor = Color.White,
                         focusedTextColor = Color.Black,
                         unfocusedTextColor = Color.Black,
-
-                        ),
+                    ),
                     placeholder = { Text("Password", color = Color(0xFF5A5A5A)) },
                     label = null,
                     modifier = Modifier
@@ -172,7 +176,7 @@ fun RegisterScreen(modifier: Modifier = Modifier, onLoginClick: () -> Unit, onRe
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedTextField(
                     value = confirmPassword,
-                    onValueChange = {confirmPassword = it},
+                    onValueChange = { confirmPassword = it },
                     trailingIcon = {
                         if (revealConfirmPassword) {
                             IconButton(
@@ -188,7 +192,6 @@ fun RegisterScreen(modifier: Modifier = Modifier, onLoginClick: () -> Unit, onRe
                                     revealConfirmPassword = true
                                 },
                             ) {
-
                                 Icon(painter = painterResource(R.drawable.eye_off), contentDescription = null)
                             }
                         }
@@ -200,8 +203,7 @@ fun RegisterScreen(modifier: Modifier = Modifier, onLoginClick: () -> Unit, onRe
                         containerColor = Color.White,
                         focusedTextColor = Color.Black,
                         unfocusedTextColor = Color.Black,
-
-                        ),
+                    ),
                     placeholder = { Text("Confirm Password", color = Color(0xFF5A5A5A)) },
                     label = null,
                     modifier = Modifier
@@ -214,7 +216,7 @@ fun RegisterScreen(modifier: Modifier = Modifier, onLoginClick: () -> Unit, onRe
                     },
                 )
                 Spacer(modifier = Modifier.height(24.dp))
-                Row (modifier= Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.Center) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                     Text(
                         modifier = Modifier.clickable { onLoginClick() },
                         text = buildAnnotatedString {
@@ -234,13 +236,28 @@ fun RegisterScreen(modifier: Modifier = Modifier, onLoginClick: () -> Unit, onRe
             Column {
                 Button(
                     onClick = {
-                        if (password == confirmPassword){
-                            onRegisterClick()
-                        }else{
+                        if (password == confirmPassword) {
+                            userDAO.registerUser(username, password, email) { success, message ->
+                                if (success) {
+                                    userDAO.login(username, password) { loginSuccess ->
+                                        if (loginSuccess) {
+                                            onRegisterSuccess()
+                                        } else {
+                                            Log.e("RegisterScreen", "Failed to login after registration.")
+                                        }
+                                    }
+                                } else {
+                                    username = ""
+                                    email = ""
+                                    password = ""
+                                    confirmPassword = ""
+                                    Log.e("RegisterScreen", message)
+                                }
+                            }
+                        } else {
                             password = ""
                             confirmPassword = ""
-                            username = ""
-                            email = ""
+                            Log.e("RegisterScreen", "Passwords do not match.")
                         }
                     },
                     modifier = Modifier
@@ -254,8 +271,6 @@ fun RegisterScreen(modifier: Modifier = Modifier, onLoginClick: () -> Unit, onRe
                     Text("Register", color = Color(0xFFFFFFFF), fontSize = 20.sp, fontWeight = FontWeight.W400, fontFamily = FontFamily.SansSerif)
                 }
             }
-
-
         }
     }
 }

@@ -27,7 +27,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.AbsoluteAlignment
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -41,13 +41,19 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.songhub.R
+import com.example.songhub.DAO.UserDAO
+import com.example.songhub.model.User
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(modifier: Modifier = Modifier, onLoginClick: () -> Unit, onRegisterClick: () -> Unit) {
+fun LoginScreen(modifier: Modifier = Modifier, onLoginClick: (User) -> Unit, onRegisterClick: () -> Unit) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var revealPassword by remember { mutableStateOf(false)}
+    var revealPassword by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    val userDAO = UserDAO()
+
     Card(
         modifier = modifier
             .fillMaxSize()
@@ -59,10 +65,9 @@ fun LoginScreen(modifier: Modifier = Modifier, onLoginClick: () -> Unit, onRegis
             modifier = modifier
                 .padding(25.dp, 0.dp)
                 .fillMaxSize(),
-            horizontalAlignment = AbsoluteAlignment.Left,
+            horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.Top
         ) {
-
             Column {
                 Text(
                     "Login",
@@ -95,10 +100,8 @@ fun LoginScreen(modifier: Modifier = Modifier, onLoginClick: () -> Unit, onRegis
                         containerColor = Color.White,
                         focusedTextColor = Color.Black,
                         unfocusedTextColor = Color.Black,
-
-                        ),
+                    ),
                     placeholder = { Text("Username", color = Color(0xFF5A5A5A)) },
-                    label = null,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(55.dp)
@@ -109,23 +112,13 @@ fun LoginScreen(modifier: Modifier = Modifier, onLoginClick: () -> Unit, onRegis
                     value = password,
                     onValueChange = { password = it },
                     trailingIcon = {
-                        if (revealPassword) {
-                            IconButton(
-                                onClick = {
-                                    revealPassword = false
-                                },
-                            ) {
-                                Icon(painter = painterResource(R.drawable.eye), contentDescription = null)
-                            }
-                        } else {
-                            IconButton(
-                                onClick = {
-                                    revealPassword = true
-                                },
-                            ) {
-
-                                Icon(painter = painterResource(R.drawable.eye_off), contentDescription = null)
-                            }
+                        IconButton(
+                            onClick = { revealPassword = !revealPassword },
+                        ) {
+                            Icon(
+                                painter = if (revealPassword) painterResource(R.drawable.eye) else painterResource(R.drawable.eye_off),
+                                contentDescription = if (revealPassword) "Hide password" else "Show password"
+                            )
                         }
                     },
                     shape = MaterialTheme.shapes.medium,
@@ -135,19 +128,12 @@ fun LoginScreen(modifier: Modifier = Modifier, onLoginClick: () -> Unit, onRegis
                         containerColor = Color.White,
                         focusedTextColor = Color.Black,
                         unfocusedTextColor = Color.Black,
-
-                        ),
+                    ),
                     placeholder = { Text("Password", color = Color(0xFF5A5A5A)) },
-                    label = null,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(55.dp),
-                    visualTransformation = if (revealPassword) {
-                        VisualTransformation.None
-                    } else {
-                        PasswordVisualTransformation()
-                    },
-
+                    visualTransformation = if (revealPassword) VisualTransformation.None else PasswordVisualTransformation(),
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 Row(
@@ -173,12 +159,18 @@ fun LoginScreen(modifier: Modifier = Modifier, onLoginClick: () -> Unit, onRegis
             Column {
                 Button(
                     onClick = {
-                        if (username == password){
-                            onLoginClick()
-                        }
-                        else{
-                            username = ""
-                            password = ""
+                        userDAO.login(username, password) { success ->
+                            if (success) {
+                                userDAO.fetchUser(username, password) { user ->
+                                    if (user != null) {
+                                        onLoginClick(user)
+                                    } else {
+                                        errorMessage = "User not found."
+                                    }
+                                }
+                            } else {
+                                errorMessage = "Invalid username or password."
+                            }
                         }
                     },
                     modifier = Modifier
@@ -197,9 +189,16 @@ fun LoginScreen(modifier: Modifier = Modifier, onLoginClick: () -> Unit, onRegis
                         fontFamily = FontFamily.SansSerif
                     )
                 }
+                errorMessage?.let {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = it,
+                        color = Color.Red,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.W400
+                    )
+                }
             }
-
-
         }
     }
 }

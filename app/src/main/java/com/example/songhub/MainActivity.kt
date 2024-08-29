@@ -17,11 +17,14 @@ import androidx.navigation.compose.rememberNavController
 import com.example.songhub.ui.screens.LoginScreen
 import com.example.songhub.ui.screens.MainScreen
 import com.example.songhub.ui.screens.RegisterScreen
+import com.example.songhub.ui.screens.UserAreaScreen
 import com.example.songhub.ui.theme.SonghubTheme
+import com.google.firebase.FirebaseApp
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        FirebaseApp.initializeApp(this)
         enableEdgeToEdge()
         setContent {
             SonghubTheme {
@@ -38,14 +41,16 @@ class MainActivity : ComponentActivity() {
                         composable("register") {
                             RegisterScreen(modifier = Modifier.padding(innerPadding), onLoginClick = {
                                 navController.navigate("login")
-                            },onRegisterClick = {
+                            }, onRegisterSuccess = {
                                 navController.navigate("main")
                             })
                         }
                         composable("main") {
-                            MainScreen(modifier = Modifier.padding(innerPadding))
+                            MainScreen(modifier = Modifier.padding(innerPadding), navController = navController)
                         }
-
+                        composable("userArea") {
+                            UserAreaScreen(modifier = Modifier.padding(innerPadding), navController = navController)
+                        }
                     }
                 }
             }
