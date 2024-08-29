@@ -40,6 +40,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -55,6 +56,8 @@ fun RegisterScreen(modifier: Modifier = Modifier, onLoginClick: () -> Unit, onRe
     var confirmPassword by remember { mutableStateOf("") }
     var revealPassword by remember { mutableStateOf(false)}
     var revealConfirmPassword by remember { mutableStateOf(false)}
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
 
     val userDAO = UserDAO()
 
@@ -234,6 +237,19 @@ fun RegisterScreen(modifier: Modifier = Modifier, onLoginClick: () -> Unit, onRe
 
             Spacer(modifier = Modifier.height(30.dp))
             Column {
+                errorMessage?.let {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = it,
+                        color = Color.Red,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.W400 ,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                        textAlign = TextAlign.Center
+                    )
+                }
                 Button(
                     onClick = {
                         if (password == confirmPassword) {
@@ -251,6 +267,7 @@ fun RegisterScreen(modifier: Modifier = Modifier, onLoginClick: () -> Unit, onRe
                                     email = ""
                                     password = ""
                                     confirmPassword = ""
+                                    errorMessage = "Email already exists. Try another email."
                                     Log.e("RegisterScreen", message)
                                 }
                             }
