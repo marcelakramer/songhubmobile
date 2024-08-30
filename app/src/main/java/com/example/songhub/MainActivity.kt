@@ -40,10 +40,9 @@ class MainActivity : ComponentActivity() {
                     }
                     composable("main") {
                         MainLayout(title = "My songs", navController = navController) {
-                            MainScreen(
-                                modifier = Modifier,
-                                navController = navController
-                            )
+                            MainScreen(modifier = Modifier.padding(innerPadding), onAddSongClick = {
+                                navController.navigate("addSong")
+                            })
                         }
                     }
                     composable("userArea") {
@@ -53,6 +52,15 @@ class MainActivity : ComponentActivity() {
                                 navController = navController
                             )
                         }
+                        composable("main") {
+                            MainScreen(modifier = Modifier.padding(innerPadding), onAddSongClick = {
+                                navController.navigate("addSong")
+                            })
+                        }
+                        composable("addSong") {
+                            SongRegisterScreen(modifier = Modifier.padding(innerPadding))
+                        }
+
                     }
                 }
             }
