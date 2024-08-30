@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -30,16 +31,25 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 NavHost(navController = navController, startDestination = "songinfo") {
                     composable("login") {
-                        LoginScreen(onLoginClick = {
-                            navController.navigate("main")
-                        }, onRegisterClick = {
-                            navController.navigate("register")
-                        })
+                        LoginScreen(
+                            onLoginClick = {
+                                navController.navigate("main")
+                            },
+                            onRegisterClick = {
+                                navController.navigate("register")
+                            }
+                        )
                     }
                     composable("register") {
-                        RegisterScreen(modifier = Modifier, onLoginClick = {
-                            navController.navigate("login")
-                        }, onRegisterSuccess = { navController.navigate("login") })
+                        RegisterScreen(
+                            modifier = Modifier,
+                            onLoginClick = {
+                                navController.navigate("login")
+                            },
+                            onRegisterSuccess = {
+                                navController.navigate("login")
+                            }
+                        )
                     }
                     composable("main") {
                         MainLayout(title = "My songs", navController = navController) {
@@ -64,7 +74,8 @@ class MainActivity : ComponentActivity() {
                     composable("songinfo") {
                         MainLayout(title = "Song Info", navController = navController) {
                             SongInfoScreen(
-                                modifier = Modifier
+                                modifier = Modifier,
+                                navController = navController
                             )
                         }
                     }

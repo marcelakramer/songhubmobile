@@ -19,11 +19,15 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.navigation.NavController
 import com.example.songhub.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SongInfoScreen(modifier: Modifier = Modifier) {
+fun SongInfoScreen(
+    modifier: Modifier = Modifier,
+    navController: NavController,
+) {
     val musicItem = remember {
         MusicItemMock(
             title = "Nome da Música",
@@ -34,11 +38,10 @@ fun SongInfoScreen(modifier: Modifier = Modifier) {
             year = "2024"
         )
     }
-    val expanded by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
 
     IconButton(
-        onClick = { /*TODO: Handle back navigation*/ },
+        onClick = { navController.navigate("userArea") }, // Navega para a tela "userArea"
         modifier = Modifier.size(24.dp)
     ) {
         Icon(
@@ -50,13 +53,15 @@ fun SongInfoScreen(modifier: Modifier = Modifier) {
 
     Column(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxSize()
             .padding(vertical = 30.dp)
             .padding(horizontal = 16.dp)
             .verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
+
+
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
