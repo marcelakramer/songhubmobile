@@ -63,6 +63,10 @@ fun RegisterScreen(modifier: Modifier = Modifier, onLoginClick: () -> Unit, onRe
 
     val userDAO = UserDAO()
 
+    fun areFieldsFilled(): Boolean {
+        return username.isNotBlank() && email.isNotBlank() && password.isNotBlank() && confirmPassword.isNotBlank()
+    }
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -274,7 +278,8 @@ fun RegisterScreen(modifier: Modifier = Modifier, onLoginClick: () -> Unit, onRe
                         shape = RoundedCornerShape(20),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFF040723)
-                        )
+                        ),
+                        enabled = areFieldsFilled()
                     ) {
                         Text(
                             "Register",

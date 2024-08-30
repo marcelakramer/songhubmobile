@@ -55,6 +55,10 @@ fun LoginScreen(modifier: Modifier = Modifier, onLoginClick: (User) -> Unit, onR
 
     val userDAO = UserDAO()
 
+    fun areFieldsFilled(): Boolean {
+        return username.isNotBlank() && password.isNotBlank()
+    }
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -185,7 +189,8 @@ fun LoginScreen(modifier: Modifier = Modifier, onLoginClick: (User) -> Unit, onR
                         shape = RoundedCornerShape(20),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFF040723)
-                        )
+                        ),
+                        enabled = areFieldsFilled()
                     ) {
                         Text(
                             "Login",
