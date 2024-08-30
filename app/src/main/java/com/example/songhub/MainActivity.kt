@@ -24,7 +24,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             SonghubTheme {
                 val navController = rememberNavController()
-                NavHost(navController = navController, startDestination = "register") {
+                NavHost(navController = navController, startDestination = "main") {
                     composable("login") {
                         LoginScreen(onLoginClick = {
                             navController.navigate("main")
@@ -38,7 +38,7 @@ class MainActivity : ComponentActivity() {
                         }, onRegisterSuccess = { navController.navigate("login") })
                     }
                     composable("main") {
-                        MainLayout(title = "My songs") {
+                        MainLayout(title = "My songs", navController = navController) {
                             MainScreen(
                                 modifier = Modifier,
                                 navController = navController
@@ -46,7 +46,7 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                     composable("userArea") {
-                        MainLayout(title = "My profile") {
+                        MainLayout(title = "My profile", navController = navController) {
                             UserAreaScreen(
                                 modifier = Modifier,
                                 navController = navController
