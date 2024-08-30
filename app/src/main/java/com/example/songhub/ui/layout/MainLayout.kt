@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.BottomAppBar
@@ -149,7 +151,7 @@ fun MainLayout(title: String, navController: NavController, content: @Composable
                                 tint = Color.White
                             )
                         }
-                        IconButton(onClick = { /*TODO*/ }) {
+                        IconButton(onClick = { navController.navigate("addsong") }) {
                             Icon(
                                 painter = painterResource(id = R.drawable.add_song),
                                 contentDescription = "Add Song",

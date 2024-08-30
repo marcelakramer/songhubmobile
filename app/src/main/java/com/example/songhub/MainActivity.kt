@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -14,6 +15,7 @@ import com.example.songhub.ui.screens.MainScreen
 import com.example.songhub.ui.screens.ProfileScreen
 import com.example.songhub.ui.screens.RegisterScreen
 import com.example.songhub.ui.screens.UserAreaScreen
+import com.example.songhub.ui.screens.SongRegisterScreen
 import com.example.songhub.ui.theme.SonghubTheme
 import com.google.firebase.FirebaseApp
 
@@ -40,10 +42,7 @@ class MainActivity : ComponentActivity() {
                     }
                     composable("main") {
                         MainLayout(title = "My songs", navController = navController) {
-                            MainScreen(
-                                modifier = Modifier,
-                                navController = navController
-                            )
+                            MainScreen(modifier = Modifier, navController = navController)
                         }
                     }
                     composable("userArea") {
@@ -54,8 +53,15 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                     }
+                    composable("addSong") {
+                        MainLayout(title = "New Song", navController = navController) {
+                            SongRegisterScreen(modifier = Modifier, navController = navController)
+                        }
+                    }
+
+                    }
                 }
             }
         }
     }
-}
+
