@@ -24,6 +24,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.navigation.NavController
 import com.example.songhub.DAO.SongDAO
 import com.example.songhub.R
+import com.example.songhub.model.Song
+import coil.compose.rememberImagePainter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,26 +34,12 @@ fun SongInfoScreen(
     modifier: Modifier = Modifier,
     navController: NavController,
 ) {
-    val songDAO = remember {
-        SongDAO()
-    }
-
-
-    val musicItem = remember {
-        MusicItemMock(
-            id = "",
-            title = "Nome da Música",
-            duration = "3:45",
-            artist = "Nome do Artista",
-            cover = null,
-            album = "Nome do Álbum",
-            year = "2024"
-        )
-    }
+    val songDAO = remember { SongDAO() }
+    var song by remember { mutableStateOf<Song?>(null) }
 
     LaunchedEffect(id) {
-        songDAO.findById(id) {
-            song -> musicItem
+        songDAO.findById(id) { fetchedSong ->
+            song = fetchedSong
         }
     }
 
@@ -77,24 +65,24 @@ fun SongInfoScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-
-
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier.fillMaxWidth()
         ) {
             Spacer(modifier = Modifier.size(26.dp))
-            Text(
-                text = musicItem.title,
-                fontSize = 28.sp,
-                fontFamily = FontFamily.SansSerif,
-                fontWeight = FontWeight(700),
-                color = Color(0xFFFFFFFF),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.align(Alignment.CenterVertically)
-            )
+            song?.title?.let {
+                Text(
+                    text = it,
+                    fontSize = 28.sp,
+                    fontFamily = FontFamily.SansSerif,
+                    fontWeight = FontWeight(700),
+                    color = Color(0xFFFFFFFF),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.align(Alignment.CenterVertically)
+                )
+            }
             Spacer(modifier = Modifier.size(16.dp))
 
             IconButton(
@@ -115,9 +103,9 @@ fun SongInfoScreen(
                 .align(Alignment.CenterHorizontally)
                 .clip(RoundedCornerShape(12.dp))
         ) {
-            musicItem.cover?.let {
+            song?.imageUrl?.let {
                 Image(
-                    painter = painterResource(it),
+                    painter = rememberImagePainter(it),
                     contentDescription = "Album Cover",
                     modifier = Modifier.fillMaxSize()
                 )
@@ -141,7 +129,7 @@ fun SongInfoScreen(
                 text = buildAnnotatedString {
                     append("Artist: ")
                     withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                        append(musicItem.artist)
+                        append(song?.artist)
                     }
                 },
                 fontSize = 20.sp,
@@ -154,7 +142,7 @@ fun SongInfoScreen(
                 text = buildAnnotatedString {
                     append("Album: ")
                     withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                        append(musicItem.album)
+                        append(song?.album)
                     }
                 },
                 fontSize = 20.sp,
@@ -167,7 +155,7 @@ fun SongInfoScreen(
                 text = buildAnnotatedString {
                     append("Duration: ")
                     withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                        append(musicItem.duration)
+                        append(song?.duration)
                     }
                 },
                 fontSize = 20.sp,
@@ -180,7 +168,7 @@ fun SongInfoScreen(
                 text = buildAnnotatedString {
                     append("Year: ")
                     withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                        append(musicItem.year)
+                        append(song?.year)
                     }
                 },
                 fontSize = 20.sp,
@@ -215,7 +203,17 @@ fun SongInfoScreen(
                 Text("Favorite", color = Color(0xFF9B3EFF))
             }
             Button(
-                onClick = { /*TODO: Delete song*/ },
+                onClick = {
+                    song?.let {
+                        songDAO.delete(it) { success ->
+                            if (success) {
+                                navController.navigate("main")
+                            } else {
+                                // Handle deletion failure
+                            }
+                        }
+                    }
+                },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Transparent,
                     contentColor = Color(0xFFF54D4D)
@@ -235,13 +233,3 @@ fun SongInfoScreen(
         }
     }
 }
-
-data class MusicItemMock(
-    val id: String,
-    val title: String,
-    val duration: String,
-    val artist: String,
-    val album: String,
-    val year: String,
-    val cover: Int?
-)

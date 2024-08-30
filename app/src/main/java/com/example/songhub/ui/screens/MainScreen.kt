@@ -28,7 +28,6 @@ import coil.compose.rememberImagePainter
 import com.example.songhub.DAO.SongDAO
 import com.example.songhub.R
 import com.example.songhub.model.Song
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(modifier: Modifier = Modifier, navController: NavController) {
@@ -73,12 +72,12 @@ fun MainScreen(modifier: Modifier = Modifier, navController: NavController) {
 }
 
 @Composable
-fun MusicCard(item: MusicItem, navController: NavController) {
+fun MusicCard(item: Song, navController: NavController) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { navController.navigate("songinfo/BJnlYTeuV6BqCUePjJE3") }
-            .padding(vertical = 4.dp),
+            .padding(vertical = 4.dp)
+            .clickable { navController.navigate("songinfo/${item.id}") },
         colors = CardDefaults.cardColors(containerColor = Color(0xFF040723)),
     ) {
         Row(
@@ -161,10 +160,3 @@ fun MusicCard(item: MusicItem, navController: NavController) {
         }
     }
 }
-
-data class MusicItem(
-    val title: String,
-    val duration: String,
-    val artist: String,
-    val cover: Int?
-)

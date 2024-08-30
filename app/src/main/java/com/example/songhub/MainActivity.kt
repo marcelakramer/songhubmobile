@@ -6,7 +6,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -29,33 +28,22 @@ class MainActivity : ComponentActivity() {
         setContent {
             SonghubTheme {
                 val navController = rememberNavController()
-                NavHost(navController = navController, startDestination = "songinfo") {
+                NavHost(navController = navController, startDestination = "main") {
                     composable("login") {
-                        LoginScreen(
-                            onLoginClick = {
-                                navController.navigate("main")
-                            },
-                            onRegisterClick = {
-                                navController.navigate("register")
-                            }
-                        )
+                        LoginScreen(onLoginClick = {
+                            navController.navigate("main")
+                        }, onRegisterClick = {
+                            navController.navigate("register")
+                        })
                     }
                     composable("register") {
-                        RegisterScreen(
-                            modifier = Modifier,
-                            onLoginClick = {
-                                navController.navigate("login")
-                            },
-                            onRegisterSuccess = {
-                                navController.navigate("login")
-                            }
-                        )
+                        RegisterScreen(modifier = Modifier, onLoginClick = {
+                            navController.navigate("login")
+                        }, onRegisterSuccess = { navController.navigate("login") })
                     }
                     composable("main") {
                         MainLayout(title = "My songs", navController = navController) {
-                            MainScreen(modifier = Modifier, onAddSongClick = {
-                                navController.navigate("addSong")
-                            }, navController)
+                            MainScreen(modifier = Modifier, navController = navController)
                         }
                     }
                     composable("userArea") {
@@ -71,17 +59,16 @@ class MainActivity : ComponentActivity() {
                             SongRegisterScreen(modifier = Modifier, navController = navController)
                         }
                     }
-                    composable("songinfo") {
-                        MainLayout(title = "Song Info", navController = navController) {
-                            SongInfoScreen(
-                                id = "BJnlYTeuV6BqCUePjJE3",
-                                modifier = Modifier,
-                                navController = navController
-                            )
+                    composable("songinfo/{id}") { backStackEntry ->
+                        val id = backStackEntry.arguments?.getString("id") ?: ""
+                        MainLayout(title = "Song", navController = navController) {
+                            SongInfoScreen(id = id, navController = navController)
                         }
                     }
+
+
                 }
             }
         }
     }
-
+}
