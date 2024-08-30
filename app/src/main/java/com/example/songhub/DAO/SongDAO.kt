@@ -26,8 +26,13 @@ class SongDAO {
 
     fun findAll(callback: (List<Song>) -> Unit) {
         db.collection("songs").get()
-            .addOnSuccessListener { document ->
-                val songs = document.toObjects<Song>()
+            .addOnSuccessListener { result ->
+                val songs = mutableListOf<Song>()
+                for (document in result) {
+                    val song = document.toObject(Song::class.java)
+                    song.id = document.id // Atribui o ID do documento ao objeto Song
+                    songs.add(song)
+                }
                 callback(songs)
             }
             .addOnFailureListener {
@@ -68,5 +73,21 @@ class SongDAO {
                     callback(false)
                 }
         } ?: callback(false)
+    }
+
+    fun findById(id: String, callback: (Song?) -> Unit) {
+        db.collection("songs").document(id).get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val song = document.toObject(Song::class.java)
+                    song?.id = document.id
+                    callback(song)
+                } else {
+                    callback(null)
+                }
+            }
+            .addOnFailureListener {
+                callback(null)
+            }
     }
 }

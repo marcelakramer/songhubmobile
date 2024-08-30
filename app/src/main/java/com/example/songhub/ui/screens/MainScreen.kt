@@ -116,7 +116,7 @@ fun MusicCard(item: Song) {
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = item.title,
+                    text = item.id.toString(),
                     fontSize = 20.sp,
                     fontFamily = FontFamily.SansSerif,
                     fontWeight = FontWeight.Bold,
