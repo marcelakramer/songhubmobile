@@ -22,7 +22,7 @@ import com.example.songhub.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(modifier: Modifier = Modifier, navController: NavController) {
+fun MainScreen(modifier: Modifier = Modifier, onAddSongClick: () -> Unit){
     val items = listOf(
         MusicItem("Taste", "2:37", "Sabrina Carpenter", R.drawable.cover),
         MusicItem("Good Graces", "3:06", "Sabrina Carpenter", null),

@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -40,7 +41,7 @@ class MainActivity : ComponentActivity() {
                     }
                     composable("main") {
                         MainLayout(title = "My songs", navController = navController) {
-                            MainScreen(modifier = Modifier.padding(innerPadding), onAddSongClick = {
+                            MainScreen(modifier = Modifier, onAddSongClick = {
                                 navController.navigate("addSong")
                             })
                         }
@@ -52,14 +53,14 @@ class MainActivity : ComponentActivity() {
                                 navController = navController
                             )
                         }
-                        composable("main") {
-                            MainScreen(modifier = Modifier.padding(innerPadding), onAddSongClick = {
-                                navController.navigate("addSong")
+                    }
+                    composable("addSong") {
+                        MainLayout(title = "My profile", navController = navController) {
+                            SongRegisterScreen(modifier = Modifier, onAddSongSuccess = {
+                                navController.navigate("main")
                             })
                         }
-                        composable("addSong") {
-                            SongRegisterScreen(modifier = Modifier.padding(innerPadding))
-                        }
+                    }
 
                     }
                 }

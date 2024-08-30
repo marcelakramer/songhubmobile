@@ -1,5 +1,8 @@
 package com.example.songhub.ui.screens
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -31,6 +34,7 @@ import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -41,11 +45,15 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.songhub.DAO.SongDAO
 import com.example.songhub.R
+import com.example.songhub.model.Song
+
+val songDAO:SongDAO = SongDAO()
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SongRegisterScreen(modifier: Modifier = Modifier) {
+fun SongRegisterScreen(modifier: Modifier = Modifier, onAddSongSuccess: () -> Unit) {
     var title by rememberSaveable { mutableStateOf("") }
     var artist by remember { mutableStateOf("") }
     var album by remember { mutableStateOf("") }
