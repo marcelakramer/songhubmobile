@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "616141476698",
+    "project_id": "songhub-fc593",
+    "storage_bucket": "songhub-fc593.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:616141476698:android:1e55f16440418d6d7d5963",
+        "android_client_info": {
+          "package_name": "com.example.songhub"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAy9MAN1Pk7W4xHbPhYTdhG--2VmBmwuto"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
