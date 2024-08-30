@@ -141,6 +141,40 @@ class UserDAO {
         }
     }
 
+    fun updateUser(oldEmail: String, newUsername: String, newPassword: String, newEmail: String, callback: (Boolean, String) -> Unit) {
+        try {
+            db.collection("users")
+                .whereEqualTo("email", oldEmail)
+                .get()
+                .addOnSuccessListener { documents ->
+                    if (documents.isEmpty) {
+                        callback(false, "User not found")
+                    } else {
+                        val document = documents.first()
+                        val userRef = db.collection("users").document(document.id)
+
+                        userRef.update(mapOf(
+                            "username" to newUsername,
+                            "password" to newPassword,
+                            "email" to newEmail
+                        )).addOnSuccessListener {
+                            callback(true, "User updated successfully")
+                        }.addOnFailureListener { exception ->
+                            Log.e("UserDAO", "Error updating user: ", exception)
+                            callback(false, "Failed to update user")
+                        }
+                    }
+                }
+                .addOnFailureListener { exception ->
+                    Log.e("UserDAO", "Error fetching user: ", exception)
+                    callback(false, "Failed to fetch user")
+                }
+        } catch (e: Exception) {
+            Log.e("UserDAO", "Exception during update: ", e)
+            callback(false, "Exception occurred during update")
+        }
+    }
+
     fun logout() {
         UserSession.loggedInUser = null
     }
