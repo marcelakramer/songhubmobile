@@ -13,6 +13,7 @@ import com.example.songhub.ui.screens.LoginScreen
 import com.example.songhub.ui.screens.MainScreen
 import com.example.songhub.ui.screens.RegisterScreen
 import com.example.songhub.ui.screens.UserAreaScreen
+import com.example.songhub.ui.screens.SongRegisterScreen
 import com.example.songhub.ui.theme.SonghubTheme
 import com.google.firebase.FirebaseApp
 
