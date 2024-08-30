@@ -51,6 +51,13 @@ fun SongRegisterScreen(modifier: Modifier = Modifier) {
     var album by remember { mutableStateOf("") }
     var duration by remember { mutableStateOf("") }
     var year by remember { mutableStateOf("") }
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    val context = LocalContext.current
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        selectedImageUri = uri
+    }
+
     Card(
         modifier = modifier
             .fillMaxSize()
@@ -174,7 +181,7 @@ fun SongRegisterScreen(modifier: Modifier = Modifier) {
                 Spacer(modifier = Modifier.height(24.dp))
                 Row (modifier= Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.Center) {
                     Text(
-                        modifier = Modifier.clickable {},
+                        modifier = Modifier.clickable { imagePickerLauncher.launch("image/*") },
                         text = "Upload cover",
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color(0xFFFFFFFF),
@@ -187,7 +194,48 @@ fun SongRegisterScreen(modifier: Modifier = Modifier) {
             Column {
                 Button(
                     onClick = {
-                        //TODO
+
+                        if (title.isNotEmpty() && artist.isNotEmpty() && album.isNotEmpty() && duration.isNotEmpty() && year.isNotEmpty()) {
+                            if (selectedImageUri != null) {
+                                songDAO.uploadImage(selectedImageUri!!) { url ->
+                                    if (url != null) {
+                                        val newSong = Song(
+                                            title = title,
+                                            artist = artist,
+                                            album = album,
+                                            duration = duration,
+                                            year = year,
+                                            imageUrl = url
+                                        )
+                                        songDAO.add(newSong) { success ->
+                                            if (success) {
+                                                // Handle successful addition, e.g., show a message or navigate away
+                                            } else {
+                                                // Handle failure, e.g., show an error message
+                                            }
+                                        }
+                                    } else {
+                                        // Handle image upload failure
+                                    }
+                                }
+                            } else {
+                                val newSong = Song(
+                                    title = title,
+                                    artist = artist,
+                                    album = album,
+                                    duration = duration,
+                                    year = year,
+                                    imageUrl = null // Handle case where no image is uploaded
+                                )
+                                songDAO.add(newSong) { success ->
+                                    if (success) {
+                                        // Handle successful addition
+                                    } else {
+                                        // Handle failure
+                                    }
+                                }
+                            }
+                        }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
