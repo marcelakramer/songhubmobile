@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -45,6 +47,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.songhub.DAO.SongDAO
 import com.example.songhub.R
 import com.example.songhub.model.Song
@@ -53,7 +56,7 @@ val songDAO:SongDAO = SongDAO()
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SongRegisterScreen(modifier: Modifier = Modifier, onAddSongSuccess: () -> Unit) {
+fun SongRegisterScreen(modifier: Modifier = Modifier, navController: NavController) {
     var title by rememberSaveable { mutableStateOf("") }
     var artist by remember { mutableStateOf("") }
     var album by remember { mutableStateOf("") }
@@ -66,17 +69,11 @@ fun SongRegisterScreen(modifier: Modifier = Modifier, onAddSongSuccess: () -> Un
         selectedImageUri = uri
     }
 
-    Card(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(20.dp, 50.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF060E43)),
-        shape = RoundedCornerShape(16.dp),
-    ) {
         Column(
             modifier = modifier
                 .padding(25.dp, 0.dp)
-                .fillMaxSize(),
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
@@ -244,6 +241,7 @@ fun SongRegisterScreen(modifier: Modifier = Modifier, onAddSongSuccess: () -> Un
                                 }
                             }
                         }
+                        navController.navigate("main")
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -260,4 +258,3 @@ fun SongRegisterScreen(modifier: Modifier = Modifier, onAddSongSuccess: () -> Un
 
         }
     }
-}

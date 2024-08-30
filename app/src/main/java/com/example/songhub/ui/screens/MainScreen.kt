@@ -7,6 +7,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -18,16 +23,24 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.draw.clip
 import androidx.navigation.NavController
+import coil.compose.rememberImagePainter
+import com.example.songhub.DAO.SongDAO
 import com.example.songhub.R
+import com.example.songhub.model.Song
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(modifier: Modifier = Modifier, onAddSongClick: () -> Unit){
-    val items = listOf(
-        MusicItem("Taste", "2:37", "Sabrina Carpenter", R.drawable.cover),
-        MusicItem("Good Graces", "3:06", "Sabrina Carpenter", null),
-        MusicItem("Sharpest Tool", "3:38", "Sabrina Carpenter", R.drawable.cover),
-    )
+fun MainScreen(modifier: Modifier = Modifier, navController: NavController) {
+    var items by remember { mutableStateOf<List<Song>>(emptyList()) }
+    val songDAO = SongDAO()
+
+    // Fetch songs when the screen is first displayed
+    LaunchedEffect(Unit) {
+        songDAO.findAll { fetchedSongs ->
+            items = fetchedSongs
+        }
+    }
+
 
     Box(
         modifier = modifier
@@ -44,7 +57,7 @@ fun MainScreen(modifier: Modifier = Modifier, onAddSongClick: () -> Unit){
         }
 
         FloatingActionButton(
-            onClick = { /* TODO */ },
+            onClick = { navController.navigate("addSong") },
             modifier = Modifier
                 .size(65.dp)
                 .align(Alignment.BottomEnd),
@@ -61,7 +74,7 @@ fun MainScreen(modifier: Modifier = Modifier, onAddSongClick: () -> Unit){
 }
 
 @Composable
-fun MusicCard(item: MusicItem) {
+fun MusicCard(item: Song) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -79,9 +92,9 @@ fun MusicCard(item: MusicItem) {
                     .size(60.dp)
                     .clip(RoundedCornerShape(5.dp))
             ) {
-                if (item.cover != null) {
+                if (item.imageUrl != null) {
                     Image(
-                        painter = painterResource(id = item.cover),
+                        painter = rememberImagePainter(item.imageUrl),
                         contentDescription = "Song Cover",
                         modifier = Modifier
                             .fillMaxSize()
@@ -149,9 +162,3 @@ fun MusicCard(item: MusicItem) {
     }
 }
 
-data class MusicItem(
-    val title: String,
-    val duration: String,
-    val artist: String,
-    val cover: Int?
-)

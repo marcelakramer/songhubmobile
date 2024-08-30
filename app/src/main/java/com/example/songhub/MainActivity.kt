@@ -41,9 +41,7 @@ class MainActivity : ComponentActivity() {
                     }
                     composable("main") {
                         MainLayout(title = "My songs", navController = navController) {
-                            MainScreen(modifier = Modifier, onAddSongClick = {
-                                navController.navigate("addSong")
-                            })
+                            MainScreen(modifier = Modifier, navController = navController)
                         }
                     }
                     composable("userArea") {
@@ -56,9 +54,7 @@ class MainActivity : ComponentActivity() {
                     }
                     composable("addSong") {
                         MainLayout(title = "My profile", navController = navController) {
-                            SongRegisterScreen(modifier = Modifier, onAddSongSuccess = {
-                                navController.navigate("main")
-                            })
+                            SongRegisterScreen(modifier = Modifier, navController = navController)
                         }
                     }
 
@@ -67,4 +63,4 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-}
+

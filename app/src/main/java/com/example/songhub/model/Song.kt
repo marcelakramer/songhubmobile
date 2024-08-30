@@ -1,7 +1,7 @@
 package com.example.songhub.model
 
 data class Song(
-    val id: String? = null, // ID do documento Firestore
+    var id: String? = null, // ID do documento Firestore
     val title: String = "",
     val artist: String = "",
     val album: String = "",
