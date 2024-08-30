@@ -41,7 +41,7 @@ fun SongInfoScreen(
     val scrollState = rememberScrollState()
 
     IconButton(
-        onClick = { navController.navigate("userArea") }, // Navega para a tela "userArea"
+        onClick = { navController.navigate("userArea") },
         modifier = Modifier.size(24.dp)
     ) {
         Icon(
