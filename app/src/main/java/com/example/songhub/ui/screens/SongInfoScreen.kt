@@ -22,16 +22,24 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.navigation.NavController
+import com.example.songhub.DAO.SongDAO
 import com.example.songhub.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SongInfoScreen(
+    id: String,
     modifier: Modifier = Modifier,
     navController: NavController,
 ) {
+    val songDAO = remember {
+        SongDAO()
+    }
+
+
     val musicItem = remember {
         MusicItemMock(
+            id = "",
             title = "Nome da Música",
             duration = "3:45",
             artist = "Nome do Artista",
@@ -40,6 +48,13 @@ fun SongInfoScreen(
             year = "2024"
         )
     }
+
+    LaunchedEffect(id) {
+        songDAO.findById(id) {
+            song -> musicItem
+        }
+    }
+
     val scrollState = rememberScrollState()
 
     IconButton(
@@ -222,6 +237,7 @@ fun SongInfoScreen(
 }
 
 data class MusicItemMock(
+    val id: String,
     val title: String,
     val duration: String,
     val artist: String,

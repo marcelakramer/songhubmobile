@@ -77,7 +77,7 @@ fun MusicCard(item: MusicItem, navController: NavController) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { navController.navigate("songinfo") }
+            .clickable { navController.navigate("songinfo/BJnlYTeuV6BqCUePjJE3") }
             .padding(vertical = 4.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF040723)),
     ) {

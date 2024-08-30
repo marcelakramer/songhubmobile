@@ -53,7 +53,9 @@ class MainActivity : ComponentActivity() {
                     }
                     composable("main") {
                         MainLayout(title = "My songs", navController = navController) {
-                            MainScreen(modifier = Modifier, navController = navController)
+                            MainScreen(modifier = Modifier, onAddSongClick = {
+                                navController.navigate("addSong")
+                            }, navController)
                         }
                     }
                     composable("userArea") {
@@ -69,11 +71,10 @@ class MainActivity : ComponentActivity() {
                             SongRegisterScreen(modifier = Modifier, navController = navController)
                         }
                     }
-
-                    }
                     composable("songinfo") {
                         MainLayout(title = "Song Info", navController = navController) {
                             SongInfoScreen(
+                                id = "BJnlYTeuV6BqCUePjJE3",
                                 modifier = Modifier,
                                 navController = navController
                             )
