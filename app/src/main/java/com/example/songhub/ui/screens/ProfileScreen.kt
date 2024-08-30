@@ -204,6 +204,12 @@ fun ProfileScreen(
                             newEmail = email.value
                         ) { success, message ->
                             if (success) {
+                                val newUser = User(
+                                    email = email.value,
+                                    username = username.value,
+                                    password = password.value
+                                )
+                                UserSession.loggedInUser = newUser
                                 navController.navigate("main")
                             } else {
                                 /* colocar print pra dizer que deu erro */
