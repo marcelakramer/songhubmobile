@@ -1,6 +1,7 @@
 package com.example.songhub.ui.screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -50,7 +51,7 @@ fun MainScreen(modifier: Modifier = Modifier, navController: NavController) {
                 .align(Alignment.TopCenter)
         ) {
             items(items) { item ->
-                MusicCard(item)
+                MusicCard(item, navController)
             }
         }
 
@@ -72,10 +73,11 @@ fun MainScreen(modifier: Modifier = Modifier, navController: NavController) {
 }
 
 @Composable
-fun MusicCard(item: Song) {
+fun MusicCard(item: MusicItem, navController: NavController) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable { navController.navigate("songinfo") }
             .padding(vertical = 4.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF040723)),
     ) {
@@ -160,3 +162,9 @@ fun MusicCard(item: Song) {
     }
 }
 
+data class MusicItem(
+    val title: String,
+    val duration: String,
+    val artist: String,
+    val cover: Int?
+)

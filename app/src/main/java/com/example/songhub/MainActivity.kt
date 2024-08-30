@@ -14,6 +14,7 @@ import com.example.songhub.ui.screens.LoginScreen
 import com.example.songhub.ui.screens.MainScreen
 import com.example.songhub.ui.screens.ProfileScreen
 import com.example.songhub.ui.screens.RegisterScreen
+import com.example.songhub.ui.screens.SongInfoScreen
 import com.example.songhub.ui.screens.UserAreaScreen
 import com.example.songhub.ui.screens.SongRegisterScreen
 import com.example.songhub.ui.theme.SonghubTheme
@@ -27,7 +28,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             SonghubTheme {
                 val navController = rememberNavController()
-                NavHost(navController = navController, startDestination = "main") {
+                NavHost(navController = navController, startDestination = "songinfo") {
                     composable("login") {
                         LoginScreen(onLoginClick = {
                             navController.navigate("main")
@@ -59,6 +60,13 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
+                    }
+                    composable("songinfo") {
+                        MainLayout(title = "Song Info", navController = navController) {
+                            SongInfoScreen(
+                                modifier = Modifier
+                            )
+                        }
                     }
                 }
             }
