@@ -19,6 +19,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.navigation.NavController
 import com.example.songhub.R
 
@@ -33,7 +35,7 @@ fun SongInfoScreen(
             title = "Nome da Música",
             duration = "3:45",
             artist = "Nome do Artista",
-            cover = R.drawable.cover,
+            cover = null,
             album = "Nome do Álbum",
             year = "2024"
         )
@@ -67,14 +69,18 @@ fun SongInfoScreen(
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier.fillMaxWidth()
         ) {
+            Spacer(modifier = Modifier.size(26.dp))
             Text(
                 text = musicItem.title,
-                fontSize = 26.sp,
+                fontSize = 28.sp,
                 fontFamily = FontFamily.SansSerif,
                 fontWeight = FontWeight(700),
                 color = Color(0xFFFFFFFF),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.align(Alignment.CenterVertically)
             )
+            Spacer(modifier = Modifier.size(16.dp))
 
             IconButton(
                 onClick = { /*TODO: Handle edit action*/ },
@@ -88,21 +94,32 @@ fun SongInfoScreen(
             }
         }
 
-        musicItem.cover?.let {
-            Image(
-                painter = painterResource(it),
-                contentDescription = "Album/Music Image",
+        Box(
+            modifier = Modifier
+                .size(230.dp)
+                .align(Alignment.CenterHorizontally)
+                .clip(RoundedCornerShape(12.dp))
+        ) {
+            musicItem.cover?.let {
+                Image(
+                    painter = painterResource(it),
+                    contentDescription = "Album Cover",
+                    modifier = Modifier.fillMaxSize()
+                )
+            } ?: Icon(
+                painter = painterResource(R.drawable.music),
+                contentDescription = "Music Icon",
+                tint = Color.White,
                 modifier = Modifier
-                    .size(250.dp)
-                    .align(Alignment.CenterHorizontally)
+                    .size(200.dp)
+                    .align(Alignment.Center)
             )
         }
 
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .align(Alignment.Start),
+                .padding(16.dp, 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
@@ -114,9 +131,9 @@ fun SongInfoScreen(
                 },
                 fontSize = 20.sp,
                 fontFamily = FontFamily.SansSerif,
-                fontWeight = FontWeight(500),
                 color = Color(0xFFFFFFFF),
-                modifier = Modifier.padding(start = 30.dp)
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
             Text(
                 text = buildAnnotatedString {
@@ -127,9 +144,9 @@ fun SongInfoScreen(
                 },
                 fontSize = 20.sp,
                 fontFamily = FontFamily.SansSerif,
-                fontWeight = FontWeight(500),
                 color = Color(0xFFFFFFFF),
-                modifier = Modifier.padding(start = 30.dp)
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
             Text(
                 text = buildAnnotatedString {
@@ -140,9 +157,9 @@ fun SongInfoScreen(
                 },
                 fontSize = 20.sp,
                 fontFamily = FontFamily.SansSerif,
-                fontWeight = FontWeight(500),
                 color = Color(0xFFFFFFFF),
-                modifier = Modifier.padding(start = 30.dp)
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
             Text(
                 text = buildAnnotatedString {
@@ -153,9 +170,9 @@ fun SongInfoScreen(
                 },
                 fontSize = 20.sp,
                 fontFamily = FontFamily.SansSerif,
-                fontWeight = FontWeight(500),
                 color = Color(0xFFFFFFFF),
-                modifier = Modifier.padding(start = 30.dp)
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
 
@@ -171,7 +188,7 @@ fun SongInfoScreen(
                     contentColor = Color(0xFF9B3EFF)
                 ),
                 border = BorderStroke(1.dp, Color(0xFF9B3EFF)),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(10.dp),
             ) {
                 Icon(
                     painter = painterResource(R.drawable.heart),
@@ -189,10 +206,10 @@ fun SongInfoScreen(
                     contentColor = Color(0xFFF54D4D)
                 ),
                 border = BorderStroke(1.dp, Color(0xFFF54D4D)),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(10.dp),
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.close),
+                    painter = painterResource(R.drawable.delete),
                     contentDescription = "Delete Icon",
                     tint = Color(0xFFF54D4D),
                     modifier = Modifier.size(20.dp)
