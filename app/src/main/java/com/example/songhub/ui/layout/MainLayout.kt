@@ -100,7 +100,7 @@ fun MainLayout(title: String, navController: NavController, content: @Composable
                                     },
                                     onClick = {
                                         expanded.value = false
-                                        navController.navigate("userArea")
+                                        navController.navigate("profile")
                                     }
                                 )
                                 DropdownMenuItem(
@@ -151,7 +151,7 @@ fun MainLayout(title: String, navController: NavController, content: @Composable
                                 tint = Color.White
                             )
                         }
-                        IconButton(onClick = { navController.navigate("addsong") }) {
+                        IconButton(onClick = { navController.navigate("addSong") }) {
                             Icon(
                                 painter = painterResource(id = R.drawable.add_song),
                                 contentDescription = "Add Song",

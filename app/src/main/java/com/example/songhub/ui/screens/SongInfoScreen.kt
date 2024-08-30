@@ -1,5 +1,6 @@
 package com.example.songhub.ui.screens
 
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -26,6 +27,7 @@ import com.example.songhub.DAO.SongDAO
 import com.example.songhub.R
 import com.example.songhub.model.Song
 import coil.compose.rememberImagePainter
+import com.google.gson.Gson
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -86,7 +88,9 @@ fun SongInfoScreen(
             Spacer(modifier = Modifier.size(16.dp))
 
             IconButton(
-                onClick = { /*TODO: Handle edit action*/ },
+                onClick = {
+                    val songJson = Uri.encode(Gson().toJson(song))
+                    navController.navigate("addSong?songJson=$songJson")  },
                 modifier = Modifier.size(24.dp)
             ) {
                 Icon(
@@ -184,25 +188,31 @@ fun SongInfoScreen(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Button(
-                onClick = { /*TODO: Add to favorites*/ },
-                colors = ButtonDefaults.buttonColors(
+            OutlinedButton(
+                onClick = { },
+                colors = ButtonDefaults.outlinedButtonColors(
                     containerColor = Color.Transparent,
                     contentColor = Color(0xFF9B3EFF)
                 ),
                 border = BorderStroke(1.dp, Color(0xFF9B3EFF)),
-                shape = RoundedCornerShape(10.dp),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .width(130.dp)
+                    .height(45.dp)
             ) {
                 Icon(
                     painter = painterResource(R.drawable.heart),
                     contentDescription = "Favorite Icon",
                     tint = Color(0xFF9B3EFF),
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier
+                        .size(32.dp)
+                        .padding(end = 9.dp)
                 )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Favorite", color = Color(0xFF9B3EFF))
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(text = "Favorite", color = Color(0xFF9B3EFF))
             }
-            Button(
+
+            OutlinedButton(
                 onClick = {
                     song?.let {
                         songDAO.delete(it) { success ->
@@ -214,22 +224,27 @@ fun SongInfoScreen(
                         }
                     }
                 },
-                colors = ButtonDefaults.buttonColors(
+                colors = ButtonDefaults.outlinedButtonColors(
                     containerColor = Color.Transparent,
                     contentColor = Color(0xFFF54D4D)
                 ),
                 border = BorderStroke(1.dp, Color(0xFFF54D4D)),
-                shape = RoundedCornerShape(10.dp),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .width(130.dp)
+                    .height(45.dp)
             ) {
                 Icon(
                     painter = painterResource(R.drawable.delete),
                     contentDescription = "Delete Icon",
                     tint = Color(0xFFF54D4D),
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier
+                        .size(32.dp)
+                        .padding(end = 9.dp)
                 )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Delete", color = Color(0xFFF54D4D))
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(text = "Delete", color = Color(0xFFF54D4D))
+                }
             }
-        }
     }
 }
