@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -71,7 +72,7 @@ fun SongRegisterScreen(modifier: Modifier = Modifier, navController: NavControll
 
         Column(
             modifier = modifier
-                .padding(25.dp, 0.dp)
+                .padding(25.dp, 15.dp)
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -120,7 +121,7 @@ fun SongRegisterScreen(modifier: Modifier = Modifier, navController: NavControll
                         unfocusedTextColor = Color.Black,
 
                         ),
-                    placeholder = { Text("Email", color = Color(0xFF5A5A5A)) },
+                    placeholder = { Text("Artist", color = Color(0xFF5A5A5A)) },
                     label = null,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -139,7 +140,7 @@ fun SongRegisterScreen(modifier: Modifier = Modifier, navController: NavControll
                         unfocusedTextColor = Color.Black,
 
                         ),
-                    placeholder = { Text("Password", color = Color(0xFF5A5A5A)) },
+                    placeholder = { Text("Album", color = Color(0xFF5A5A5A)) },
                     label = null,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -185,6 +186,15 @@ fun SongRegisterScreen(modifier: Modifier = Modifier, navController: NavControll
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 Row (modifier= Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.Center) {
+                    Icon(
+                        painter = painterResource(R.drawable.upload),
+                        contentDescription = "Upload cover",
+                        tint = Color.White,
+                        modifier = Modifier
+                            .size(20.dp)
+                            .align(Alignment.CenterVertically)
+                    )
+                    Spacer(modifier = Modifier.size(8.dp))
                     Text(
                         modifier = Modifier.clickable { imagePickerLauncher.launch("image/*") },
                         text = "Upload cover",

@@ -34,13 +34,11 @@ fun MainScreen(modifier: Modifier = Modifier, navController: NavController) {
     var items by remember { mutableStateOf<List<Song>>(emptyList()) }
     val songDAO = SongDAO()
 
-    // Fetch songs when the screen is first displayed
     LaunchedEffect(Unit) {
         songDAO.findAll { fetchedSongs ->
             items = fetchedSongs
         }
     }
-
 
     Box(
         modifier = modifier
@@ -116,7 +114,7 @@ fun MusicCard(item: Song) {
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = item.id.toString(),
+                    text = item.title,
                     fontSize = 20.sp,
                     fontFamily = FontFamily.SansSerif,
                     fontWeight = FontWeight.Bold,

@@ -53,7 +53,7 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                     composable("addSong") {
-                        MainLayout(title = "My profile", navController = navController) {
+                        MainLayout(title = "New Song", navController = navController) {
                             SongRegisterScreen(modifier = Modifier, navController = navController)
                         }
                     }
