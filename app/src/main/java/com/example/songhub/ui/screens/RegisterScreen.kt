@@ -267,7 +267,11 @@ fun RegisterScreen(modifier: Modifier = Modifier, onLoginClick: () -> Unit, onRe
                                     email = ""
                                     password = ""
                                     confirmPassword = ""
-                                    errorMessage = "Email already exists. Try another email."
+                                    errorMessage = when (message) {
+                                        "Email already exists" -> "Email already exists. Try another email."
+                                        "Username already exists" -> "Username already exists. Try another username."
+                                        else -> "Registration failed. Try again later."
+                                    }
                                     Log.e("RegisterScreen", message)
                                 }
                             }

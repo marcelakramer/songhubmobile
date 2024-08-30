@@ -42,7 +42,7 @@ class MainActivity : ComponentActivity() {
                             RegisterScreen(modifier = Modifier.padding(innerPadding), onLoginClick = {
                                 navController.navigate("login")
                             }, onRegisterSuccess = {
-                                navController.navigate("main")
+                                navController.navigate("login")
                             })
                         }
                         composable("main") {

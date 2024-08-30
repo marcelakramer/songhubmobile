@@ -74,24 +74,36 @@ class UserDAO {
             db.collection("users")
                 .whereEqualTo("email", email)
                 .get()
-                .addOnSuccessListener { documents ->
-                    if (!documents.isEmpty) {
+                .addOnSuccessListener { emailDocuments ->
+                    if (!emailDocuments.isEmpty) {
                         callback(false, "Email already exists")
                     } else {
-                        val user = hashMapOf(
-                            "username" to username,
-                            "password" to password,
-                            "email" to email
-                        )
-
                         db.collection("users")
-                            .add(user)
-                            .addOnSuccessListener {
-                                callback(true, "User registered successfully")
+                            .whereEqualTo("username", username)
+                            .get()
+                            .addOnSuccessListener { usernameDocuments ->
+                                if (!usernameDocuments.isEmpty) {
+                                    callback(false, "Username already exists")
+                                } else {
+                                    val user = hashMapOf(
+                                        "username" to username,
+                                        "password" to password,
+                                        "email" to email
+                                    )
+                                    db.collection("users")
+                                        .add(user)
+                                        .addOnSuccessListener {
+                                            callback(true, "User registered successfully")
+                                        }
+                                        .addOnFailureListener { exception ->
+                                            Log.e("UserDAO", "Error registering user: ", exception)
+                                            callback(false, "Failed to register user")
+                                        }
+                                }
                             }
                             .addOnFailureListener { exception ->
-                                Log.e("UserDAO", "Error registering user: ", exception)
-                                callback(false, "Failed to register user")
+                                Log.e("UserDAO", "Error checking username: ", exception)
+                                callback(false, "Failed to check username")
                             }
                     }
                 }
