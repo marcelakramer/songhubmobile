@@ -1,8 +1,10 @@
 package com.example.songhub.ui.screens
 
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -31,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.AbsoluteAlignment
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -58,46 +61,47 @@ fun RegisterScreen(modifier: Modifier = Modifier, onLoginClick: () -> Unit, onRe
     var revealConfirmPassword by remember { mutableStateOf(false)}
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-
     val userDAO = UserDAO()
 
-    Card(
+    Box(
         modifier = modifier
             .fillMaxSize()
-            .padding(20.dp, 50.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF060E43)),
-        shape = RoundedCornerShape(16.dp),
+            .background(Color(0xFF040723))
     ) {
-        Column(
+        Card(
             modifier = modifier
-                .padding(25.dp, 0.dp)
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = AbsoluteAlignment.Left,
-            verticalArrangement = Arrangement.Top
+                .padding(20.dp, 100.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF060E43)),
+            shape = RoundedCornerShape(16.dp),
         ) {
-
-            Column {
-                Text(
-                    "Register",
-                    color = Color.White,
-                    fontSize = 48.sp,
-                    fontFamily = FontFamily.SansSerif,
-                    fontWeight = FontWeight.W700
-                )
-                Text(
-                    text = buildAnnotatedString {
-                        append("Create an account at ")
-                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                            append("songhub")
-                        }
-                    },
-                    fontSize = 14.sp,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color(0xFFFFFFFF)
-                )
-            }
-            Column {
+            Column(
+                modifier = modifier
+                    .padding(25.dp, 20.dp)
+                    .fillMaxSize(),
+                horizontalAlignment = Alignment.Start,
+                verticalArrangement = Arrangement.Top
+            ) {
+                Column {
+                    Text(
+                        "Register",
+                        color = Color.White,
+                        fontSize = 48.sp,
+                        fontFamily = FontFamily.SansSerif,
+                        fontWeight = FontWeight.W700
+                    )
+                    Text(
+                        text = buildAnnotatedString {
+                            append("Create an account at ")
+                            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                append("songhub")
+                            }
+                        },
+                        fontSize = 14.sp,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color(0xFFFFFFFF)
+                    )
+                }
                 Spacer(modifier = Modifier.height(36.dp))
                 OutlinedTextField(
                     value = username,
@@ -140,19 +144,11 @@ fun RegisterScreen(modifier: Modifier = Modifier, onLoginClick: () -> Unit, onRe
                     onValueChange = { password = it },
                     trailingIcon = {
                         if (revealPassword) {
-                            IconButton(
-                                onClick = {
-                                    revealPassword = false
-                                },
-                            ) {
+                            IconButton(onClick = { revealPassword = false }) {
                                 Icon(painter = painterResource(R.drawable.eye), contentDescription = null)
                             }
                         } else {
-                            IconButton(
-                                onClick = {
-                                    revealPassword = true
-                                },
-                            ) {
+                            IconButton(onClick = { revealPassword = true }) {
                                 Icon(painter = painterResource(R.drawable.eye_off), contentDescription = null)
                             }
                         }
@@ -182,19 +178,11 @@ fun RegisterScreen(modifier: Modifier = Modifier, onLoginClick: () -> Unit, onRe
                     onValueChange = { confirmPassword = it },
                     trailingIcon = {
                         if (revealConfirmPassword) {
-                            IconButton(
-                                onClick = {
-                                    revealConfirmPassword = false
-                                },
-                            ) {
+                            IconButton(onClick = { revealConfirmPassword = false }) {
                                 Icon(painter = painterResource(R.drawable.eye), contentDescription = null)
                             }
                         } else {
-                            IconButton(
-                                onClick = {
-                                    revealConfirmPassword = true
-                                },
-                            ) {
+                            IconButton(onClick = { revealConfirmPassword = true }) {
                                 Icon(painter = painterResource(R.drawable.eye_off), contentDescription = null)
                             }
                         }
@@ -233,63 +221,69 @@ fun RegisterScreen(modifier: Modifier = Modifier, onLoginClick: () -> Unit, onRe
                         fontWeight = FontWeight.W400,
                     )
                 }
-            }
-
-            Spacer(modifier = Modifier.height(30.dp))
-            Column {
-                errorMessage?.let {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = it,
-                        color = Color.Red,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.W400 ,
+                Spacer(modifier = Modifier.height(30.dp))
+                Column {
+                    errorMessage?.let {
+                        Text(
+                            text = it,
+                            color = Color.Red,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.W400,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 16.dp)
+                                .align(Alignment.CenterHorizontally),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                    Button(
+                        onClick = {
+                            if (password == confirmPassword) {
+                                userDAO.registerUser(username, password, email) { success, message ->
+                                    if (success) {
+                                        userDAO.login(username, password) { loginSuccess ->
+                                            if (loginSuccess) {
+                                                onRegisterSuccess()
+                                            } else {
+                                                Log.e("RegisterScreen", "Failed to login after registration.")
+                                            }
+                                        }
+                                    } else {
+                                        username = ""
+                                        email = ""
+                                        password = ""
+                                        confirmPassword = ""
+                                        errorMessage = when (message) {
+                                            "Email already exists" -> "Email already exists. Try another email."
+                                            "Username already exists" -> "Username already exists. Try another username."
+                                            else -> "Registration failed. Try again later."
+                                        }
+                                        Log.e("RegisterScreen", message)
+                                    }
+                                }
+                            } else {
+                                password = ""
+                                confirmPassword = ""
+                                errorMessage = "Passwords do not match."
+                                Log.e("RegisterScreen", "Passwords do not match.")
+                            }
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 16.dp),
-                        textAlign = TextAlign.Center
-                    )
-                }
-                Button(
-                    onClick = {
-                        if (password == confirmPassword) {
-                            userDAO.registerUser(username, password, email) { success, message ->
-                                if (success) {
-                                    userDAO.login(username, password) { loginSuccess ->
-                                        if (loginSuccess) {
-                                            onRegisterSuccess()
-                                        } else {
-                                            Log.e("RegisterScreen", "Failed to login after registration.")
-                                        }
-                                    }
-                                } else {
-                                    username = ""
-                                    email = ""
-                                    password = ""
-                                    confirmPassword = ""
-                                    errorMessage = when (message) {
-                                        "Email already exists" -> "Email already exists. Try another email."
-                                        "Username already exists" -> "Username already exists. Try another username."
-                                        else -> "Registration failed. Try again later."
-                                    }
-                                    Log.e("RegisterScreen", message)
-                                }
-                            }
-                        } else {
-                            password = ""
-                            confirmPassword = ""
-                            Log.e("RegisterScreen", "Passwords do not match.")
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(55.dp),
-                    shape = RoundedCornerShape(20),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF040723)
-                    )
-                ) {
-                    Text("Register", color = Color(0xFFFFFFFF), fontSize = 20.sp, fontWeight = FontWeight.W400, fontFamily = FontFamily.SansSerif)
+                            .height(55.dp),
+                        shape = RoundedCornerShape(20),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF040723)
+                        )
+                    ) {
+                        Text(
+                            "Register",
+                            color = Color(0xFFFFFFFF),
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.W400,
+                            fontFamily = FontFamily.SansSerif
+                        )
+                    }
                 }
             }
         }
