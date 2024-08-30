@@ -4,20 +4,21 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.songhub.model.Song
 import com.example.songhub.ui.layout.MainLayout
 import com.example.songhub.ui.screens.LoginScreen
 import com.example.songhub.ui.screens.MainScreen
 import com.example.songhub.ui.screens.ProfileScreen
 import com.example.songhub.ui.screens.RegisterScreen
-import com.example.songhub.ui.screens.UserAreaScreen
+import com.example.songhub.ui.screens.SongInfoScreen
 import com.example.songhub.ui.screens.SongRegisterScreen
 import com.example.songhub.ui.theme.SonghubTheme
 import com.google.firebase.FirebaseApp
+import com.google.gson.Gson
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,7 +28,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             SonghubTheme {
                 val navController = rememberNavController()
-                NavHost(navController = navController, startDestination = "main") {
+                NavHost(navController = navController, startDestination = "login") {
                     composable("login") {
                         LoginScreen(onLoginClick = {
                             navController.navigate("main")
@@ -45,7 +46,7 @@ class MainActivity : ComponentActivity() {
                             MainScreen(modifier = Modifier, navController = navController)
                         }
                     }
-                    composable("userArea") {
+                    composable("profile") {
                         MainLayout(title = "My profile", navController = navController) {
                             ProfileScreen(
                                 modifier = Modifier,
@@ -53,15 +54,23 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                     }
-                    composable("addSong") {
+                    composable("addSong?songJson={songJson}") { backStackEntry ->
                         MainLayout(title = "New Song", navController = navController) {
-                            SongRegisterScreen(modifier = Modifier, navController = navController)
+                            val songJson = backStackEntry.arguments?.getString("songJson") ?: ""
+                            val song = Gson().fromJson(songJson, Song::class.java)
+                            SongRegisterScreen(modifier = Modifier, navController = navController, song = song ?: null)
+                        }
+                    }
+                    composable("songinfo/{id}") { backStackEntry ->
+                        val id = backStackEntry.arguments?.getString("id") ?: ""
+                        MainLayout(title = "Song Info", navController = navController) {
+                            SongInfoScreen(id = id, navController = navController)
                         }
                     }
 
-                    }
+
                 }
             }
         }
     }
-
+}
