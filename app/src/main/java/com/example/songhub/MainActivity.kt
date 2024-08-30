@@ -11,6 +11,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.songhub.ui.layout.MainLayout
 import com.example.songhub.ui.screens.LoginScreen
 import com.example.songhub.ui.screens.MainScreen
+import com.example.songhub.ui.screens.ProfileScreen
 import com.example.songhub.ui.screens.RegisterScreen
 import com.example.songhub.ui.screens.UserAreaScreen
 import com.example.songhub.ui.theme.SonghubTheme
@@ -47,7 +48,7 @@ class MainActivity : ComponentActivity() {
                     }
                     composable("userArea") {
                         MainLayout(title = "My profile", navController = navController) {
-                            UserAreaScreen(
+                            ProfileScreen(
                                 modifier = Modifier,
                                 navController = navController
                             )
