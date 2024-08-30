@@ -47,23 +47,7 @@ fun ProfileScreen(
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Start
-            ) {
-                IconButton(
-                    onClick = { navController.navigate("main") },
-                    modifier = Modifier.padding(start = 0.dp)
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_back),
-                        contentDescription = "Back",
-                        tint = Color.White,
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
-            }
-
+            Spacer(modifier = Modifier.height(28.dp))
             Card(
                 modifier = Modifier
                     .size(200.dp)
@@ -170,16 +154,16 @@ fun ProfileScreen(
                 horizontalArrangement = Arrangement.Center
             ) {
                 OutlinedButton(
-                    onClick = { /* Handle cancel */ },
+                    onClick = { navController.navigate("main") },
                     colors = ButtonDefaults.outlinedButtonColors(
                         containerColor = Color.Transparent,
                         contentColor = Color(0xFFEC5766)
                     ),
-                    border = BorderStroke(2.dp, Color(0xFFEC5766)),
-                    shape = RoundedCornerShape(23.dp),
+                    border = BorderStroke(1.dp, Color(0xFFEC5766)),
+                    shape = RoundedCornerShape(12.dp),
                     modifier = Modifier
-                        .width(140.dp)
-                        .height(60.dp)
+                        .width(130.dp)
+                        .height(45.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
@@ -220,11 +204,11 @@ fun ProfileScreen(
                         containerColor = Color.Transparent,
                         contentColor = Color(0xFF16A085)
                     ),
-                    border = BorderStroke(2.dp, Color(0xFF16A085)),
-                    shape = RoundedCornerShape(23.dp),
+                    border = BorderStroke(1.dp, Color(0xFF16A085)),
+                    shape = RoundedCornerShape(12.dp),
                     modifier = Modifier
-                        .width(140.dp)
-                        .height(60.dp)
+                        .width(130.dp)
+                        .height(45.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Check,
