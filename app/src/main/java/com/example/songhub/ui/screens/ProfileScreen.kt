@@ -1,7 +1,14 @@
 package com.example.songhub.ui.screens
 
+import android.Manifest
+import android.graphics.Bitmap
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,11 +21,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.rememberAsyncImagePainter
 import com.example.songhub.R
 import com.example.songhub.model.User
 import com.example.songhub.DAO.UserDAO
@@ -30,8 +39,34 @@ fun ProfileScreen(
     modifier: Modifier = Modifier,
     navController: NavController,
 ) {
+    val cameraPermissionGranted = remember { mutableStateOf(false) }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        cameraPermissionGranted.value = isGranted
+    }
+
     val userDAO = UserDAO()
     val user = UserSession.loggedInUser
+    val imageUri = remember { mutableStateOf<Uri?>(null) }
+    val cameraImageBitmap = remember { mutableStateOf<Bitmap?>(null) }
+
+    var showDialog by remember { mutableStateOf(false) }
+
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        imageUri.value = uri
+        cameraImageBitmap.value = null
+    }
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicturePreview()
+    ) { bitmap: Bitmap? ->
+        cameraImageBitmap.value = bitmap
+        imageUri.value = null
+    }
 
     if (user != null) {
         val username = remember { mutableStateOf(user.username) }
@@ -55,21 +90,42 @@ fun ProfileScreen(
                 shape = RoundedCornerShape(100),
                 colors = CardDefaults.cardColors(containerColor = Color(0xFFd9d9d9)),
             ) {
-                Icon(
-                    painter = painterResource(R.drawable.camera_off_outline),
-                    contentDescription = "Profile Picture",
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(30.dp),
-                    tint = Color(0xFFc2c2c2)
-                )
+                when {
+                    imageUri.value != null -> {
+                        Image(
+                            painter = rememberAsyncImagePainter(imageUri.value),
+                            contentDescription = "Selected Image",
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                    cameraImageBitmap.value != null -> {
+                        Image(
+                            bitmap = cameraImageBitmap.value!!.asImageBitmap(),
+                            contentDescription = "Camera Image",
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                    else -> {
+                        Icon(
+                            painter = painterResource(R.drawable.camera_off_outline),
+                            contentDescription = "Profile Picture",
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(30.dp),
+                            tint = Color(0xFFc2c2c2)
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.clickable {
+                    showDialog = true
+                }
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_upload),
@@ -82,6 +138,34 @@ fun ProfileScreen(
                     text = "Upload photo",
                     color = Color.White,
                     fontSize = 16.sp,
+                )
+            }
+
+            if (showDialog) {
+                AlertDialog(
+                    onDismissRequest = { showDialog = false },
+                    title = { Text("Selecionar Imagem") },
+                    text = { Text("Escolha uma opção:") },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            galleryLauncher.launch("image/*")
+                            showDialog = false
+                        }) {
+                            Text("Galeria")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = {
+                            if (cameraPermissionGranted.value) {
+                                cameraLauncher.launch(null)
+                            } else {
+                                permissionLauncher.launch(Manifest.permission.CAMERA)
+                            }
+                            showDialog = false
+                        }) {
+                            Text("Câmera")
+                        }
+                    }
                 )
             }
 
@@ -196,15 +280,15 @@ fun ProfileScreen(
                                 UserSession.loggedInUser = newUser
                                 navController.navigate("main")
                             } else {
-                                /* colocar print pra dizer que deu erro */
+                                // Lidar com erro
                             }
                         }
                     },
                     colors = ButtonDefaults.outlinedButtonColors(
                         containerColor = Color.Transparent,
-                        contentColor = Color(0xFF16A085)
+                        contentColor = Color(0xFF4CAF50)
                     ),
-                    border = BorderStroke(1.dp, Color(0xFF16A085)),
+                    border = BorderStroke(1.dp, Color(0xFF4CAF50)),
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier
                         .width(130.dp)
@@ -213,17 +297,15 @@ fun ProfileScreen(
                     Icon(
                         imageVector = Icons.Default.Check,
                         contentDescription = "Save Icon",
-                        tint = Color(0xFF16A085),
+                        tint = Color(0xFF4CAF50),
                         modifier = Modifier
                             .size(32.dp)
                             .padding(end = 9.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "Save", color = Color(0xFF16A085))
+                    Text(text = "Save", color = Color(0xFF4CAF50))
                 }
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
         }
     } else {
         Box(
