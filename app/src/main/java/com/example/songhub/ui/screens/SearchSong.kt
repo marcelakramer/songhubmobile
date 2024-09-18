@@ -105,8 +105,6 @@ fun SearchSong(modifier: Modifier = Modifier, navController: NavController) {
         }
     }
 }
-
-
 @Composable
 fun SearchMusicCard(track: Track, navController: NavController, userId: String) {
     val userDAO = UserDAO() // Initialize the UserDAO
@@ -149,7 +147,7 @@ fun SearchMusicCard(track: Track, navController: NavController, userId: String) 
 
             IconButton(
                 onClick = {
-                    userDAO.addFavoriteSong(userId, track.toSong().toString()) { success ->
+                    userDAO.addFavoriteSong(userId, track.url) { success ->
                         if (success) {
                             isFavorited = !isFavorited
                         }

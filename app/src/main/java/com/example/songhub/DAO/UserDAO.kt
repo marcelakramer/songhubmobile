@@ -181,7 +181,7 @@ class UserDAO {
         UserSession.loggedInUser = null
     }
 
-    fun addFavoriteSong(userId: String, songId: String, callback: (Boolean) -> Unit) {
+    fun addFavoriteSong(userId: String, trackUrl: String, callback: (Boolean) -> Unit) {
         val db = FirebaseFirestore.getInstance()
 
         // Query to find the user document by username
@@ -191,6 +191,7 @@ class UserDAO {
             .addOnSuccessListener { querySnapshot ->
                 if (querySnapshot.isEmpty) {
                     Log.e("Firestore", "No user found with username: $userId")
+                    callback(false)
                     return@addOnSuccessListener
                 }
 
@@ -201,27 +202,32 @@ class UserDAO {
                 // Retrieve the existing favorites list or create a new one
                 val favorites = userDoc.get("favorites") as? MutableList<String> ?: mutableListOf()
 
-                // Add the new song to the favorites list if it's not already there
-                if (songId !in favorites) {
-                    favorites.add(songId)
+                // Add the new song URL to the favorites list if it's not already there
+                if (trackUrl !in favorites) {
+                    favorites.add(trackUrl)
 
                     // Update the user document with the new favorites list
                     db.collection("users").document(userId)
                         .update("favorites", favorites)
                         .addOnSuccessListener {
                             Log.d("Firestore", "Favorite song added successfully")
+                            callback(true)
                         }
                         .addOnFailureListener { e ->
                             Log.e("Firestore", "Error adding favorite song", e)
+                            callback(false)
                         }
                 } else {
-                    Log.d("Firestore", "Song is already in favorites")
+                    Log.d("Firestore", "Song URL is already in favorites")
+                    callback(true)
                 }
             }
             .addOnFailureListener { e ->
                 Log.e("Firestore", "Error querying user by username", e)
+                callback(false)
             }
     }
+
 
 
 }
