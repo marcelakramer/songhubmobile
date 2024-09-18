@@ -25,6 +25,9 @@ import kotlinx.coroutines.launch
 import android.util.Log
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.SolidColor
+import com.example.songhub.DAO.UserDAO
+import com.example.songhub.model.Song
+import com.example.songhub.model.UserSession
 
 
 @Composable
@@ -32,6 +35,8 @@ fun SearchSong(modifier: Modifier = Modifier, navController: NavController) {
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
     var items by remember { mutableStateOf<List<Track>>(emptyList()) }
     val coroutineScope = rememberCoroutineScope()
+
+    val userId = UserSession.loggedInUser?.username ?: "" // Adjust based on how you store user ID
 
     Column(
         modifier = modifier
@@ -48,7 +53,7 @@ fun SearchSong(modifier: Modifier = Modifier, navController: NavController) {
                     color = Color.Gray,
                     shape = RoundedCornerShape(8.dp)
                 )
-                .background(color = Color(0xFF1F1B2E), shape = RoundedCornerShape(8.dp)) // Dark purple-gray background
+                .background(color = Color(0xFF1F1B2E), shape = RoundedCornerShape(8.dp))
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
             if (searchQuery.text.isEmpty()) {
@@ -69,7 +74,7 @@ fun SearchSong(modifier: Modifier = Modifier, navController: NavController) {
                                     method = "track.search",
                                     trackName = query.text,
                                     apiKey = "499a9407d353802f5f07166c0d8f35c2", // Replace with your API key
-                                    format = "json" // Specify that the format of the response should be JSON
+                                    format = "json"
                                 )
 
                                 items = response.results.trackmatches.track
@@ -95,20 +100,24 @@ fun SearchSong(modifier: Modifier = Modifier, navController: NavController) {
                 .weight(1f)
         ) {
             items(items) { track ->
-                SearchMusicCard(track, navController)
+                SearchMusicCard(track = track, navController = navController, userId = userId)
             }
         }
     }
 }
 
+
 @Composable
-fun SearchMusicCard(track: Track, navController: NavController) {
+fun SearchMusicCard(track: Track, navController: NavController, userId: String) {
+    val userDAO = UserDAO() // Initialize the UserDAO
+    var isFavorited by remember { mutableStateOf(false) } // Track if the song is favorited
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .clickable {
-                // Add logic to handle adding the track to favorites or navigate to details
+                // Handle navigation to details if needed
             },
         colors = CardDefaults.cardColors(containerColor = Color(0xFF040723)),
     ) {
@@ -140,12 +149,16 @@ fun SearchMusicCard(track: Track, navController: NavController) {
 
             IconButton(
                 onClick = {
-                    // Add logic to add the track to favorites
+                    userDAO.addFavoriteSong(userId, track.toSong().toString()) { success ->
+                        if (success) {
+                            isFavorited = !isFavorited
+                        }
+                    }
                 },
                 modifier = Modifier.size(40.dp)
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.heart_outline),
+                    painter = painterResource(if (isFavorited) R.drawable.heart_outline else R.drawable.heart_outline),
                     contentDescription = "Favorite",
                     tint = Color(0xFF9B3EFF),
                     modifier = Modifier.size(22.dp)
@@ -153,4 +166,16 @@ fun SearchMusicCard(track: Track, navController: NavController) {
             }
         }
     }
+}
+
+// Extension function to convert Track to Song
+fun Track.toSong(): Song {
+    return Song(
+        id = "", // Provide an appropriate ID if necessary
+        title = this.name,
+        artist = this.artist,
+        album = "", // Provide album if available
+        duration = "", // Provide duration if available
+        year = "" // Provide year if available
+    )
 }

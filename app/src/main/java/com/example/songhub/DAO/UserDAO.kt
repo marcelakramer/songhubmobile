@@ -1,8 +1,10 @@
 package com.example.songhub.DAO
 
 import android.util.Log
+import com.example.songhub.model.Song
 import com.example.songhub.model.User
 import com.example.songhub.model.UserSession
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 
 class UserDAO {
@@ -178,4 +180,48 @@ class UserDAO {
     fun logout() {
         UserSession.loggedInUser = null
     }
+
+    fun addFavoriteSong(userId: String, songId: String, callback: (Boolean) -> Unit) {
+        val db = FirebaseFirestore.getInstance()
+
+        // Query to find the user document by username
+        db.collection("users")
+            .whereEqualTo("username", userId)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                if (querySnapshot.isEmpty) {
+                    Log.e("Firestore", "No user found with username: $userId")
+                    return@addOnSuccessListener
+                }
+
+                // Assuming there is only one user with the given username
+                val userDoc = querySnapshot.documents.firstOrNull() ?: return@addOnSuccessListener
+                val userId = userDoc.id // Get the document ID
+
+                // Retrieve the existing favorites list or create a new one
+                val favorites = userDoc.get("favorites") as? MutableList<String> ?: mutableListOf()
+
+                // Add the new song to the favorites list if it's not already there
+                if (songId !in favorites) {
+                    favorites.add(songId)
+
+                    // Update the user document with the new favorites list
+                    db.collection("users").document(userId)
+                        .update("favorites", favorites)
+                        .addOnSuccessListener {
+                            Log.d("Firestore", "Favorite song added successfully")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("Firestore", "Error adding favorite song", e)
+                        }
+                } else {
+                    Log.d("Firestore", "Song is already in favorites")
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firestore", "Error querying user by username", e)
+            }
+    }
+
+
 }
