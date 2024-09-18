@@ -167,7 +167,7 @@ fun MainLayout(title: String, navController: NavController, content: @Composable
                                 tint = Color.White
                             )
                         }
-                        IconButton(onClick = { /*TODO*/ }) {
+                        IconButton(onClick = { navController.navigate("searchsong") }) {
                             Icon(
                                 painter = painterResource(id = R.drawable.search),
                                 contentDescription = "Search online",

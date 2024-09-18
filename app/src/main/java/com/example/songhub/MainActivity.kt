@@ -1,5 +1,6 @@
 package com.example.songhub
 
+import SearchSong
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -65,6 +66,11 @@ class MainActivity : ComponentActivity() {
                         val id = backStackEntry.arguments?.getString("id") ?: ""
                         MainLayout(title = "Song Info", navController = navController) {
                             SongInfoScreen(id = id, navController = navController)
+                        }
+                    }
+                    composable("searchsong") {
+                        MainLayout(title = "Search a Song", navController = navController) {
+                            SearchSong(modifier = Modifier, navController = navController)
                         }
                     }
 
