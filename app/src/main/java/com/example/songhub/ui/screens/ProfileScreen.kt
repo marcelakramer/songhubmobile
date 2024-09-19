@@ -1,8 +1,12 @@
 package com.example.songhub.ui.screens
 
 import android.Manifest
+import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
+import android.provider.MediaStore
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
@@ -20,18 +24,26 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import coil.compose.rememberImagePainter
 import com.example.songhub.R
 import com.example.songhub.model.User
 import com.example.songhub.DAO.UserDAO
 import com.example.songhub.model.UserSession
+import com.google.firebase.crashlytics.buildtools.reloc.org.apache.commons.io.output.ByteArrayOutputStream
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,8 +51,9 @@ fun ProfileScreen(
     modifier: Modifier = Modifier,
     navController: NavController,
 ) {
-    val cameraPermissionGranted = remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
+    val cameraPermissionGranted = remember { mutableStateOf(false) }
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
@@ -49,23 +62,24 @@ fun ProfileScreen(
 
     val userDAO = UserDAO()
     val user = UserSession.loggedInUser
-    val imageUri = remember { mutableStateOf<Uri?>(null) }
-    val cameraImageBitmap = remember { mutableStateOf<Bitmap?>(null) }
+    val imageBitmap = remember { mutableStateOf<Bitmap?>(null) }
 
     var showDialog by remember { mutableStateOf(false) }
 
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        imageUri.value = uri
-        cameraImageBitmap.value = null
+        uri?.let {
+            loadBitmapFromUri(context, it) { bitmap ->
+                imageBitmap.value = bitmap
+            }
+        }
     }
 
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicturePreview()
     ) { bitmap: Bitmap? ->
-        cameraImageBitmap.value = bitmap
-        imageUri.value = null
+        imageBitmap.value = bitmap
     }
 
     if (user != null) {
@@ -90,32 +104,31 @@ fun ProfileScreen(
                 shape = RoundedCornerShape(100),
                 colors = CardDefaults.cardColors(containerColor = Color(0xFFd9d9d9)),
             ) {
-                when {
-                    imageUri.value != null -> {
-                        Image(
-                            painter = rememberAsyncImagePainter(imageUri.value),
-                            contentDescription = "Selected Image",
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-                    cameraImageBitmap.value != null -> {
-                        Image(
-                            bitmap = cameraImageBitmap.value!!.asImageBitmap(),
-                            contentDescription = "Camera Image",
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-                    else -> {
-                        Icon(
-                            painter = painterResource(R.drawable.camera_off_outline),
-                            contentDescription = "Profile Picture",
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(30.dp),
-                            tint = Color(0xFFc2c2c2)
-                        )
-                    }
-                }
+                Log.d("isser", user.toString())
+                user.imageUrl?.let { Log.e("erro", it) }
+//                imageBitmap.value?.let { bitmap ->
+//                    Image(
+//                        bitmap = bitmap.asImageBitmap(),
+//                        contentDescription = "Profile Picture",
+//                        modifier = Modifier.fillMaxSize()
+//                    )
+//                } ?: run {
+//                    Icon(
+//                        painter = painterResource(R.drawable.camera_off_outline),
+//                        contentDescription = "Profile Picture",
+//                        modifier = Modifier
+//                            .fillMaxSize()
+//                            .padding(30.dp),
+//                        tint = Color(0xFFc2c2c2)
+//                    )
+//                }
+                Image(
+                    painter = rememberImagePainter(user.imageUrl),
+                    contentDescription = "Profile Picture",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(5.dp))
+                )
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -233,8 +246,7 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
             ) {
                 OutlinedButton(
@@ -265,24 +277,38 @@ fun ProfileScreen(
 
                 OutlinedButton(
                     onClick = {
-                        userDAO.updateUser(
-                            oldEmail = user.email,
-                            newUsername = username.value,
-                            newPassword = password.value,
-                            newEmail = email.value
-                        ) { success, message ->
-                            if (success) {
-                                val newUser = User(
-                                    email = email.value,
-                                    username = username.value,
-                                    password = password.value
-                                )
-                                UserSession.loggedInUser = newUser
-                                navController.navigate("main")
-                            } else {
-                                // Lidar com erro
+
+                        imageBitmap.value?.let { bitmap ->
+                            val imageUri = getImageUri(context, bitmap)
+                            if (imageUri != null) {
+                                userDAO.uploadImage(imageUri, username.toString()) { url ->
+                                    if (url != null) {
+                                        userDAO.updateUser(
+                                            oldEmail = user.email,
+                                            newUsername = username.value,
+                                            newPassword = password.value,
+                                            newEmail = email.value,
+                                            newImage = url
+                                        ) { success, message ->
+                                            if (success) {
+                                                val newUser = User(
+                                                    email = email.value,
+                                                    username = username.value,
+                                                    password = password.value,
+                                                    imageUrl = url
+                                                )
+                                                UserSession.loggedInUser = newUser
+                                                navController.navigate("main")
+                                            } else {
+                                                // Lidar com erro
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
+
+
                     },
                     colors = ButtonDefaults.outlinedButtonColors(
                         containerColor = Color.Transparent,
@@ -313,6 +339,24 @@ fun ProfileScreen(
             contentAlignment = Alignment.Center
         ) {
             Text(text = "No user logged in", fontSize = 36.sp, color = Color.Red)
+        }
+    }
+}
+
+private fun getImageUri(context: Context, bitmap: Bitmap): Uri? {
+    val bytes = ByteArrayOutputStream()
+    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes)
+    val path = MediaStore.Images.Media.insertImage(context.contentResolver, bitmap, "Title", null)
+    return Uri.parse(path)
+}
+
+
+private fun loadBitmapFromUri(context: Context, uri: Uri, onBitmapLoaded: (Bitmap?) -> Unit) {
+    CoroutineScope(Dispatchers.IO).launch {
+        val inputStream = context.contentResolver.openInputStream(uri)
+        val bitmap = BitmapFactory.decodeStream(inputStream)
+        withContext(Dispatchers.Main) {
+            onBitmapLoaded(bitmap)
         }
     }
 }

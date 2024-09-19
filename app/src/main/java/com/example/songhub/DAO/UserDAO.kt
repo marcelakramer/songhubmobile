@@ -1,11 +1,13 @@
 package com.example.songhub.DAO
 
+import android.net.Uri
 import android.util.Log
 import com.example.songhub.model.Song
 import com.example.songhub.model.User
 import com.example.songhub.model.UserSession
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 
 class UserDAO {
 
@@ -143,7 +145,7 @@ class UserDAO {
         }
     }
 
-    fun updateUser(oldEmail: String, newUsername: String, newPassword: String, newEmail: String, callback: (Boolean, String) -> Unit) {
+    fun updateUser(oldEmail: String, newUsername: String, newPassword: String, newEmail: String, newImage: String = null.toString(), callback: (Boolean, String) -> Unit) {
         try {
             db.collection("users")
                 .whereEqualTo("email", oldEmail)
@@ -158,7 +160,8 @@ class UserDAO {
                         userRef.update(mapOf(
                             "username" to newUsername,
                             "password" to newPassword,
-                            "email" to newEmail
+                            "email" to newEmail,
+                            "imageUrl" to newImage
                         )).addOnSuccessListener {
                             callback(true, "User updated successfully")
                         }.addOnFailureListener { exception ->
@@ -228,6 +231,19 @@ class UserDAO {
             }
     }
 
+    val storage = FirebaseStorage.getInstance().reference
+    fun uploadImage(imageUri: Uri, username: String, callback: (String?) -> Unit) {
+        val imageRef = storage.child("profile_pictures/${username}.jpg")
 
+        imageRef.putFile(imageUri)
+            .addOnSuccessListener { taskSnapshot ->
+                imageRef.downloadUrl.addOnSuccessListener { uri ->
+                    callback(uri.toString())
+                }
+            }
+            .addOnFailureListener {
+                callback(null)
+            }
+    }
 
 }
