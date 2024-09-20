@@ -25,7 +25,8 @@ class UserDAO {
                         val user = User(
                             username = document.getString("username")!!,
                             password = document.getString("password")!!,
-                            email = document.getString("email")!!
+                            email = document.getString("email")!!,
+                            imageUrl = document.getString("imageUrl")!!
                         )
                         UserSession.loggedInUser = user
                         onResult(true)

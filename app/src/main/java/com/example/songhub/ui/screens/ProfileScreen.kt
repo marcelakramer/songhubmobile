@@ -300,7 +300,7 @@ fun ProfileScreen(
                                                 UserSession.loggedInUser = newUser
                                                 navController.navigate("main")
                                             } else {
-                                                // Lidar com erro
+                                                navController.navigate("main")
                                             }
                                         }
                                     }
