@@ -270,4 +270,50 @@ class UserDAO {
             }
     }
 
+    fun addToFavoriteSongs(userId: String, trackUrl: String, callback: (Boolean) -> Unit) {
+        val db = FirebaseFirestore.getInstance()
+
+        db.collection("users")
+            .whereEqualTo("username", userId)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                if (querySnapshot.isEmpty) {
+                    Log.e("Firestore", "No user found with username: $userId")
+                    callback(false)
+                    return@addOnSuccessListener
+                }
+
+                val userDoc = querySnapshot.documents.firstOrNull() ?: return@addOnSuccessListener
+                val userId = userDoc.id // Get the document ID
+
+                // Retrieve the existing favorites list or create a new one
+                val favorites = userDoc.get("favorites") as? MutableList<String> ?: mutableListOf()
+
+                // Add the new song URL to the favorites list if it's not already there
+                if (trackUrl !in favorites) {
+                    favorites.add(trackUrl)
+
+                    // Update the user document with the new favorites list
+                    db.collection("users").document(userId)
+                        .update("favorites", favorites)
+                        .addOnSuccessListener {
+                            Log.d("Firestore", "Song added to favorites successfully")
+                            callback(true)
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("Firestore", "Error adding song to favorites", e)
+                            callback(false)
+                        }
+                } else {
+                    Log.d("Firestore", "Song URL is already in favorites")
+                    callback(true)
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firestore", "Error querying user by username", e)
+                callback(false)
+            }
+    }
+
+
 }

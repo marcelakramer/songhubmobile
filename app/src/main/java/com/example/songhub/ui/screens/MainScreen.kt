@@ -9,10 +9,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,41 +24,58 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.draw.clip
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
-import com.example.songhub.DAO.SongDAO
+import com.example.songhub.DAO.UserDAO
 import com.example.songhub.R
 import com.example.songhub.model.Song
+import com.example.songhub.model.User
+import com.example.songhub.model.UserSession
+import com.github.kittinunf.fuel.Fuel
+import com.google.gson.Gson
+import com.google.gson.JsonObject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(modifier: Modifier = Modifier, navController: NavController) {
-    var items by remember { mutableStateOf<List<Song>>(emptyList()) }
-    val songDAO = SongDAO()
+    val coroutineScope = rememberCoroutineScope()
+    var user = UserSession.loggedInUser
+    var userDAO = UserDAO()
+    var songs = remember { mutableStateOf<List<Song>>(emptyList()) }
 
     LaunchedEffect(Unit) {
-        songDAO.findAll { fetchedSongs ->
-            items = fetchedSongs
+        if (user != null) {
+            userDAO.getMySongs(user.username) { mySongs ->
+                if (mySongs != null && mySongs.isNotEmpty()) {
+                    fetchTracksInfo(mySongs, "499a9407d353802f5f07166c0d8f35c2") { fetchedSongs ->
+                        // Update your songs state with the fetched songs
+                        songs.value = fetchedSongs
+                    }
+                } else {
+                    println("No songs found for user: ${user.username}")
+                }
+            }
         }
     }
 
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-    ) {
+
+    // Displaying the songs in a LazyColumn
+    Box(modifier = modifier.fillMaxSize()) {
         LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.TopCenter)
+            modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter)
         ) {
-            items(items) { item ->
-                MusicCard(item, navController)
+            items(songs.value) { item ->
+                if (user != null) {
+                    MusicCard(item, navController, user)
+                }
             }
         }
 
         FloatingActionButton(
             onClick = { navController.navigate("addSong") },
-            modifier = Modifier
-                .size(65.dp)
-                .align(Alignment.BottomEnd),
+            modifier = Modifier.size(65.dp).align(Alignment.BottomEnd),
             containerColor = Color(0xFFAAA1FF)
         ) {
             Icon(
@@ -72,8 +88,72 @@ fun MainScreen(modifier: Modifier = Modifier, navController: NavController) {
     }
 }
 
+fun extractArtistAndTrack(url: String): Pair<String, String> {
+    val parts = url.split("/_/")
+    if (parts.size == 2) {
+        val artist = parts[0].substringAfterLast("/").replace("+", "%20")
+        val track = parts[1].replace("+", "%20")
+        println("AQUI ESTÃO: $artist e o $track")
+        return artist to track
+    }
+    throw IllegalArgumentException("URL malformada: $url")
+}
+
+fun getTrackInfo(artist: String, track: String, apiKey: String): JsonObject? {
+    val url = "https://ws.audioscrobbler.com/2.0/?method=track.getInfo&artist=$artist&track=$track&api_key=$apiKey&format=json"
+
+    val (request, response, result) = Fuel.get(url).responseString()
+
+    return when (result) {
+        is com.github.kittinunf.result.Result.Success -> {
+            val gson = Gson()
+            gson.fromJson(result.value, JsonObject::class.java)
+        }
+        is com.github.kittinunf.result.Result.Failure -> {
+            println("Erro na requisição: ${result.getException()}")
+            null
+        }
+    }
+}
+
+fun fetchTracksInfo(urls: List<String>, apiKey: String, callback: (List<Song>) -> Unit) {
+    CoroutineScope(Dispatchers.IO).launch {
+        val results = urls.map { url ->
+            val (artist, track) = extractArtistAndTrack(url)
+            getTrackInfo(artist, track, apiKey)
+        }
+
+        // Map the JsonObject results to Song objects
+        val songs = results.mapNotNull { trackInfo ->
+            trackInfo?.let { info ->
+                val track = info.getAsJsonObject("track")
+                val artistName = track.getAsJsonObject("artist").get("name").asString
+                val trackName = track.get("name").asString
+                val url = track.get("url").asString
+
+                // Extract the image URL from the album object
+                val imagesArray = track.getAsJsonObject("album").getAsJsonArray("image")
+                val imageUrl = if (imagesArray.size() > 3) {
+                    imagesArray[3].asJsonObject.get("#text").asString
+                } else {
+                    null // Handle the case where the index doesn't exist
+                }
+
+                // Assuming your Song model has these fields
+                Song(title = trackName, artist = artistName, imageUrl = imageUrl, url = url)
+            }
+        }
+
+        // Switch to the main thread to invoke the callback with the list of songs
+        withContext(Dispatchers.Main) {
+            callback(songs)
+        }
+    }
+}
+
 @Composable
-fun MusicCard(item: Song, navController: NavController) {
+fun MusicCard(item: Song, navController: NavController, user: User) {
+    var userDAO = UserDAO()
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -146,7 +226,18 @@ fun MusicCard(item: Song, navController: NavController) {
             }
             Spacer(modifier = Modifier.width(8.dp))
             IconButton(
-                onClick = { /* TODO */ },
+                onClick = {
+                    user?.let { currentUser ->
+                        val trackUrl = item.url
+                            userDAO.addToFavoriteSongs(currentUser.username, trackUrl) { success ->
+                                if (success) {
+                                    println("Song added to favorites")
+                                } else {
+                                    println("Failed to add song to favorites")
+                                }
+                            }
+                    }
+                },
                 modifier = Modifier
                     .size(40.dp)
                     .padding(0.dp)
@@ -158,6 +249,7 @@ fun MusicCard(item: Song, navController: NavController) {
                     modifier = Modifier.size(22.dp)
                 )
             }
+
         }
     }
 }

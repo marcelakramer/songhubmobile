@@ -7,5 +7,6 @@ data class Song(
     val album: String = "",
     val duration: String = "",
     val year: String = "",
-    val imageUrl: String? = null // URL da imagem
+    val imageUrl: String? = null, // URL da imagem
+    val url: String = ""
 )
