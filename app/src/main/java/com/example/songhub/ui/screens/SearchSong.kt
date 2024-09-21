@@ -147,7 +147,7 @@ fun SearchMusicCard(track: Track, navController: NavController, userId: String) 
 
             IconButton(
                 onClick = {
-                    userDAO.addFavoriteSong(userId, track.url) { success ->
+                    userDAO.addToMySongs(userId, track.url) { success ->
                         if (success) {
                             isFavorited = !isFavorited
                         }

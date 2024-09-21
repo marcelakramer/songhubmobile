@@ -2,10 +2,8 @@ package com.example.songhub.DAO
 
 import android.net.Uri
 import android.util.Log
-import com.example.songhub.model.Song
 import com.example.songhub.model.User
 import com.example.songhub.model.UserSession
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 
@@ -185,7 +183,7 @@ class UserDAO {
         UserSession.loggedInUser = null
     }
 
-    fun addFavoriteSong(userId: String, trackUrl: String, callback: (Boolean) -> Unit) {
+    fun addToMySongs(userId: String, trackUrl: String, callback: (Boolean) -> Unit) {
         val db = FirebaseFirestore.getInstance()
 
         // Query to find the user document by username
@@ -204,25 +202,25 @@ class UserDAO {
                 val userId = userDoc.id // Get the document ID
 
                 // Retrieve the existing favorites list or create a new one
-                val favorites = userDoc.get("favorites") as? MutableList<String> ?: mutableListOf()
+                val mySongs = userDoc.get("mysongs") as? MutableList<String> ?: mutableListOf()
 
                 // Add the new song URL to the favorites list if it's not already there
-                if (trackUrl !in favorites) {
-                    favorites.add(trackUrl)
+                if (trackUrl !in mySongs) {
+                    mySongs.add(trackUrl)
 
                     // Update the user document with the new favorites list
                     db.collection("users").document(userId)
-                        .update("favorites", favorites)
+                        .update("mysongs", mySongs)
                         .addOnSuccessListener {
-                            Log.d("Firestore", "Favorite song added successfully")
+                            Log.d("Firestore", "Song added successfully")
                             callback(true)
                         }
                         .addOnFailureListener { e ->
-                            Log.e("Firestore", "Error adding favorite song", e)
+                            Log.e("Firestore", "Error adding song", e)
                             callback(false)
                         }
                 } else {
-                    Log.d("Firestore", "Song URL is already in favorites")
+                    Log.d("Firestore", "Song URL is already in my songs")
                     callback(true)
                 }
             }
@@ -243,6 +241,31 @@ class UserDAO {
                 }
             }
             .addOnFailureListener {
+                callback(null)
+            }
+    }
+
+    fun getMySongs(userId: String, callback: (List<String>?) -> Unit) {
+        db.collection("users")
+            .whereEqualTo("username", userId)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                if (querySnapshot.isEmpty) {
+                    Log.e("Firestore", "No user found with username: $userId")
+                    callback(null)
+                    return@addOnSuccessListener
+                }
+
+                // Assuming there is only one user with the given username
+                val userDoc = querySnapshot.documents.firstOrNull() ?: return@addOnSuccessListener
+
+                // Retrieve the existing favorites list or return an empty list
+                val mySongs = userDoc.get("mysongs") as? List<String> ?: emptyList()
+
+                callback(mySongs)
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firestore", "Error querying user by username", e)
                 callback(null)
             }
     }
