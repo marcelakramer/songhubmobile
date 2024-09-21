@@ -11,6 +11,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.songhub.model.Song
 import com.example.songhub.ui.layout.MainLayout
+import com.example.songhub.ui.screens.FavoritesScreen
 import com.example.songhub.ui.screens.LoginScreen
 import com.example.songhub.ui.screens.MainScreen
 import com.example.songhub.ui.screens.ProfileScreen
@@ -71,6 +72,11 @@ class MainActivity : ComponentActivity() {
                     composable("searchsong") {
                         MainLayout(title = "Search a Song", navController = navController) {
                             SearchSong(modifier = Modifier, navController = navController)
+                        }
+                    }
+                    composable("favorites") {
+                        MainLayout(title = "My Favorites", navController = navController) {
+                            FavoritesScreen(modifier = Modifier, navController = navController)
                         }
                     }
 

@@ -315,5 +315,28 @@ class UserDAO {
             }
     }
 
+    fun getMyFavoriteSongs(userId: String, callback: (List<String>?) -> Unit) {
+        db.collection("users")
+            .whereEqualTo("username", userId)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                if (querySnapshot.isEmpty) {
+                    Log.e("Firestore", "No user found with username: $userId")
+                    callback(null)
+                    return@addOnSuccessListener
+                }
 
+                // Assuming there is only one user with the given username
+                val userDoc = querySnapshot.documents.firstOrNull() ?: return@addOnSuccessListener
+
+                // Retrieve the existing favorites list or return an empty list
+                val mySongs = userDoc.get("favorites") as? List<String> ?: emptyList()
+
+                callback(mySongs)
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firestore", "Error querying user by username", e)
+                callback(null)
+            }
+    }
 }

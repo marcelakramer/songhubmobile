@@ -159,7 +159,7 @@ fun MainLayout(title: String, navController: NavController, content: @Composable
                                 tint = Color.White
                             )
                         }
-                        IconButton(onClick = { /*TODO*/ }) {
+                        IconButton(onClick = { navController.navigate("favorites") }) {
                             Icon(
                                 painter = painterResource(id = R.drawable.favorites),
                                 contentDescription = "Favorites",
