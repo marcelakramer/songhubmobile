@@ -1,5 +1,6 @@
 package com.example.songhub.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -70,7 +71,7 @@ fun FavoritesScreen(modifier: Modifier = Modifier, navController: NavController)
         ) {
             items(songs.value) { item ->
                 if (user != null) {
-                    MusicCard(item, navController, user)
+                    FavoritesMusicCard(item, navController, user)
                 }
             }
         }
@@ -168,11 +169,33 @@ fun FavoritesMusicCard(item: Song, navController: NavController, user: User) {
                 onClick = {
                     user?.let { currentUser ->
                         val trackUrl = item.url
-                        userDAO.addToFavoriteSongs(currentUser.username, trackUrl) { success ->
-                            if (success) {
-                                println("Song added to favorites")
+                        Log.d("a", "chegueiii!!!!")
+
+                        userDAO.isSongFavorited(currentUser.username, trackUrl) { isFavorited ->
+                            if (isFavorited) {
+                                // Se a música já está favoritada, remove
+                                userDAO.removeFromFavoriteSongs(
+                                    currentUser.username,
+                                    trackUrl
+                                ) { removeSuccess ->
+                                    if (removeSuccess) {
+                                        println("Song removed from favorites")
+                                    } else {
+                                        println("Failed to remove song from favorites")
+                                    }
+                                }
                             } else {
-                                println("Failed to add song to favorites")
+                                // Se a música não está favoritada, adiciona
+                                userDAO.addToFavoriteSongs(
+                                    currentUser.username,
+                                    trackUrl
+                                ) { addSuccess ->
+                                    if (addSuccess) {
+                                        println("Song added to favorites")
+                                    } else {
+                                        println("Failed to add song to favorites")
+                                    }
+                                }
                             }
                         }
                     }

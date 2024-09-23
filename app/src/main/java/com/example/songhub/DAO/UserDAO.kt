@@ -339,4 +339,96 @@ class UserDAO {
                 callback(null)
             }
     }
+
+    fun removeFromFavoriteSongs(userId: String, trackUrl: String, callback: (Boolean) -> Unit) {
+        db.collection("users")
+            .whereEqualTo("username", userId)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                if (querySnapshot.isEmpty) {
+                    Log.e("Firestore", "No user found with username: $userId")
+                    callback(false)
+                    return@addOnSuccessListener
+                }
+
+                val userDoc = querySnapshot.documents.firstOrNull() ?: return@addOnSuccessListener
+                val userId = userDoc.id // Get the document ID
+
+                // Retrieve the existing favorites list
+                val favorites = userDoc.get("favorites") as? MutableList<String> ?: mutableListOf()
+
+                // Remove the song URL if it's in the favorites list
+                if (trackUrl in favorites) {
+                    favorites.remove(trackUrl)
+
+                    // Update the user document with the new favorites list
+                    db.collection("users").document(userId)
+                        .update("favorites", favorites)
+                        .addOnSuccessListener {
+                            Log.d("Firestore", "Song removed from favorites successfully")
+                            callback(true)
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("Firestore", "Error removing song from favorites", e)
+                            callback(false)
+                        }
+                } else {
+                    Log.d("Firestore", "Song URL is not in favorites")
+                    callback(true)
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firestore", "Error querying user by username", e)
+                callback(false)
+            }
+    }
+
+    fun isSongFavorited(userId: String, trackUrl: String, callback: (Boolean) -> Unit) {
+        Log.d("msg", "rapaz to aqui ne")
+        db.collection("users")
+            .whereEqualTo("username", userId)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                // Verificando se retornou algum documento
+                if (querySnapshot.isEmpty) {
+                    Log.e("Firestore", "No user found with username: $userId")
+                    callback(false)
+                    return@addOnSuccessListener
+                }
+
+                // Verificando o documento retornado
+                val userDoc = querySnapshot.documents.firstOrNull()
+                if (userDoc == null) {
+                    Log.e("Firestore", "No document found for user: $userId")
+                    callback(false)
+                    return@addOnSuccessListener
+                }
+
+                // Verificando se o campo favorites existe e se é uma lista
+                val favorites = userDoc.get("favorites") as? List<String>
+                if (favorites == null) {
+                    Log.e("Firestore", "Favorites field is missing or is not a list for user: $userId")
+                    callback(false)
+                    return@addOnSuccessListener
+                }
+
+                // Logando os favoritos para o usuário
+                Log.d("Firestore", "Favorites for user $userId: $favorites")
+                Log.d("Firestore", "Checking if track URL $trackUrl is in favorites: ${trackUrl in favorites}")
+
+                // Verifica se a URL da música está na lista de favoritos
+                if (trackUrl in favorites) {
+                    callback(true)
+                } else {
+                    callback(false)
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firestore", "Error querying user by username", e)
+                callback(false)
+            }
+    }
+
+
+
 }
