@@ -108,7 +108,7 @@ fun SearchSong(modifier: Modifier = Modifier, navController: NavController) {
 @Composable
 fun SearchMusicCard(track: Track, navController: NavController, userId: String) {
     val userDAO = UserDAO() // Initialize the UserDAO
-    var isFavorited by remember { mutableStateOf(false) } // Track if the song is favorited
+    var isInMySongs by remember { mutableStateOf(false) } // Track if the song is favorited
 
     Card(
         modifier = Modifier
@@ -149,15 +149,15 @@ fun SearchMusicCard(track: Track, navController: NavController, userId: String) 
                 onClick = {
                     userDAO.addToMySongs(userId, track.url) { success ->
                         if (success) {
-                            isFavorited = !isFavorited
+                            isInMySongs = !isInMySongs
                         }
                     }
                 },
                 modifier = Modifier.size(40.dp)
             ) {
                 Icon(
-                    painter = painterResource(if (isFavorited) R.drawable.heart_outline else R.drawable.heart_outline),
-                    contentDescription = "Favorite",
+                    painter = painterResource(if (isInMySongs) R.drawable.add_icon else R.drawable.add_icon),
+                    contentDescription = "Add song",
                     tint = Color(0xFF9B3EFF),
                     modifier = Modifier.size(22.dp)
                 )
