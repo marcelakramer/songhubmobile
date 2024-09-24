@@ -384,7 +384,6 @@ class UserDAO {
     }
 
     fun isSongFavorited(userId: String, trackUrl: String, callback: (Boolean) -> Unit) {
-        Log.d("msg", "rapaz to aqui ne")
         db.collection("users")
             .whereEqualTo("username", userId)
             .get()
@@ -411,10 +410,6 @@ class UserDAO {
                     callback(false)
                     return@addOnSuccessListener
                 }
-
-                // Logando os favoritos para o usuário
-                Log.d("Firestore", "Favorites for user $userId: $favorites")
-                Log.d("Firestore", "Checking if track URL $trackUrl is in favorites: ${trackUrl in favorites}")
 
                 // Verifica se a URL da música está na lista de favoritos
                 if (trackUrl in favorites) {

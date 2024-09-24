@@ -39,9 +39,11 @@ fun SongInfoScreen(
     val songDAO = remember { SongDAO() }
     var song by remember { mutableStateOf<Song?>(null) }
 
+    val songs = mutableListOf<String>().apply { add(id) }
+
     LaunchedEffect(id) {
-        songDAO.findById(id) { fetchedSong ->
-            song = fetchedSong
+        songDAO.fetchTracksInfo(songs, "499a9407d353802f5f07166c0d8f35c2") { fetchedSongs ->
+            song = fetchedSongs[0]
         }
     }
 

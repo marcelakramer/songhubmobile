@@ -104,24 +104,6 @@ fun ProfileScreen(
                 shape = RoundedCornerShape(100),
                 colors = CardDefaults.cardColors(containerColor = Color(0xFFd9d9d9)),
             ) {
-                Log.d("isser", user.toString())
-                user.imageUrl?.let { Log.e("erro", it) }
-//                imageBitmap.value?.let { bitmap ->
-//                    Image(
-//                        bitmap = bitmap.asImageBitmap(),
-//                        contentDescription = "Profile Picture",
-//                        modifier = Modifier.fillMaxSize()
-//                    )
-//                } ?: run {
-//                    Icon(
-//                        painter = painterResource(R.drawable.camera_off_outline),
-//                        contentDescription = "Profile Picture",
-//                        modifier = Modifier
-//                            .fillMaxSize()
-//                            .padding(30.dp),
-//                        tint = Color(0xFFc2c2c2)
-//                    )
-//                }
                 Image(
                     painter = rememberImagePainter(user.imageUrl),
                     contentDescription = "Profile Picture",

@@ -1,5 +1,7 @@
 package com.example.songhub.ui.screens
 
+import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -52,7 +54,6 @@ fun MainScreen(modifier: Modifier = Modifier, navController: NavController) {
             userDAO.getMySongs(user.username) { mySongs ->
                 if (mySongs != null && mySongs.isNotEmpty()) {
                     songDAO.fetchTracksInfo(mySongs, "499a9407d353802f5f07166c0d8f35c2") { fetchedSongs ->
-                        // Update your songs state with the fetched songs
                         songs.value = fetchedSongs
                     }
                 } else {
@@ -93,11 +94,13 @@ fun MainScreen(modifier: Modifier = Modifier, navController: NavController) {
 @Composable
 fun MusicCard(item: Song, navController: NavController, user: User) {
     var userDAO = UserDAO()
+    val encodedUrl = Uri.encode(item.url)
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
-            .clickable { navController.navigate("songinfo/${item.id}") },
+            .clickable { navController.navigate("songinfo/$encodedUrl") },
         colors = CardDefaults.cardColors(containerColor = Color(0xFF040723)),
     ) {
         Row(

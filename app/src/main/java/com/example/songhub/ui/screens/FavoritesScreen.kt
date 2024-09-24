@@ -1,5 +1,6 @@
 package com.example.songhub.ui.screens
 
+import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -94,11 +95,12 @@ fun FavoritesScreen(modifier: Modifier = Modifier, navController: NavController)
 @Composable
 fun FavoritesMusicCard(item: Song, navController: NavController, user: User) {
     var userDAO = UserDAO()
+    val encodedUrl = Uri.encode(item.url)
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
-            .clickable { navController.navigate("songinfo/${item.id}") },
+            .clickable { navController.navigate("songinfo/$encodedUrl") },
         colors = CardDefaults.cardColors(containerColor = Color(0xFF040723)),
     ) {
         Row(
@@ -169,7 +171,6 @@ fun FavoritesMusicCard(item: Song, navController: NavController, user: User) {
                 onClick = {
                     user?.let { currentUser ->
                         val trackUrl = item.url
-                        Log.d("a", "chegueiii!!!!")
 
                         userDAO.isSongFavorited(currentUser.username, trackUrl) { isFavorited ->
                             if (isFavorited) {

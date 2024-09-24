@@ -104,7 +104,6 @@ class SongDAO {
         if (parts.size == 2) {
             val artist = parts[0].substringAfterLast("/").replace("+", "%20")
             val track = parts[1].replace("+", "%20")
-            println("AQUI ESTÃO: $artist e o $track")
             return artist to track
         }
         throw IllegalArgumentException("URL malformada: $url")
@@ -134,32 +133,49 @@ class SongDAO {
                 getTrackInfo(artist, track, apiKey)
             }
 
-            // Map the JsonObject results to Song objects
             val songs = results.mapNotNull { trackInfo ->
                 trackInfo?.let { info ->
                     val track = info.getAsJsonObject("track")
                     val artistName = track.getAsJsonObject("artist").get("name").asString
                     val trackName = track.get("name").asString
+                    val album = track.getAsJsonObject("album").get("title").asString
                     val url = track.get("url").asString
 
-                    // Extract the image URL from the album object
+                    var duration = track.get("duration").asString.toLong()
+                    val seconds = (duration / 1000) % 60 // Obtém os segundos
+                    val minutes = (duration / 1000) / 60 // Obtém os minutos
+                    val formattedDuration = String.format("%d:%02d", minutes, seconds)
+
+                    // Verificando se a chave "wiki" existe
+                    val publishedDate = track.getAsJsonObject("wiki")?.get("published")?.asString
+                    val year = publishedDate?.split(" ")?.get(2)?.trim(',') ?: "Desconhecido" // Remove a vírgula
+
                     val imagesArray = track.getAsJsonObject("album").getAsJsonArray("image")
                     val imageUrl = if (imagesArray.size() > 3) {
                         imagesArray[3].asJsonObject.get("#text").asString
                     } else {
-                        null // Handle the case where the index doesn't exist
+                        null
                     }
 
-                    // Assuming your Song model has these fields
-                    Song(title = trackName, artist = artistName, imageUrl = imageUrl, url = url)
+                    // Criando a instância da música com o ano
+                    Song(
+                        title = trackName,
+                        artist = artistName,
+                        imageUrl = imageUrl,
+                        url = url,
+                        album = album,
+                        duration = formattedDuration,
+                        year = year // Adicione o ano aqui
+                    )
                 }
             }
 
-            // Switch to the main thread to invoke the callback with the list of songs
             withContext(Dispatchers.Main) {
                 callback(songs)
             }
         }
     }
+
+
 
 }
