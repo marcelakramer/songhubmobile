@@ -27,6 +27,8 @@ import com.example.songhub.DAO.SongDAO
 import com.example.songhub.R
 import com.example.songhub.model.Song
 import coil.compose.rememberImagePainter
+import com.example.songhub.DAO.UserDAO
+import com.example.songhub.model.UserSession
 import com.google.gson.Gson
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -217,11 +219,20 @@ fun SongInfoScreen(
             OutlinedButton(
                 onClick = {
                     song?.let {
-                        songDAO.delete(it) { success ->
-                            if (success) {
-                                navController.navigate("main")
-                            } else {
-                                // Handle deletion failure
+//                        songDAO.delete(it) { success ->
+//                            if (success) {
+//                                navController.navigate("main")
+//                            } else {
+//                                // Handle deletion failure
+//                            }
+//                        }
+                        val userDAO = UserDAO()
+                        var user = UserSession.loggedInUser
+                        if (user != null) {
+                            userDAO.removeFromMySongs(user.username, song!!.url) { removeSuccess ->
+                                if(removeSuccess) {
+                                    navController.navigate("main")
+                                }
                             }
                         }
                     }

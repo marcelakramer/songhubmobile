@@ -230,6 +230,49 @@ class UserDAO {
             }
     }
 
+    fun removeFromMySongs(userId: String, trackUrl: String, callback: (Boolean) -> Unit) {
+        db.collection("users")
+            .whereEqualTo("username", userId)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                if (querySnapshot.isEmpty) {
+                    Log.e("Firestore", "No user found with username: $userId")
+                    callback(false)
+                    return@addOnSuccessListener
+                }
+
+                val userDoc = querySnapshot.documents.firstOrNull() ?: return@addOnSuccessListener
+                val userId = userDoc.id // Get the document ID
+
+                // Retrieve the existing favorites list
+                val favorites = userDoc.get("mysongs") as? MutableList<String> ?: mutableListOf()
+
+                // Remove the song URL if it's in the favorites list
+                if (trackUrl in favorites) {
+                    favorites.remove(trackUrl)
+
+                    // Update the user document with the new favorites list
+                    db.collection("users").document(userId)
+                        .update("mysongs", favorites)
+                        .addOnSuccessListener {
+                            Log.d("Firestore", "Song removed from my songs successfully")
+                            callback(true)
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("Firestore", "Error removing song from my songs", e)
+                            callback(false)
+                        }
+                } else {
+                    Log.d("Firestore", "Song URL is not in my songs")
+                    callback(true)
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firestore", "Error querying user by username", e)
+                callback(false)
+            }
+    }
+
     val storage = FirebaseStorage.getInstance().reference
     fun uploadImage(imageUri: Uri, username: String, callback: (String?) -> Unit) {
         val imageRef = storage.child("profile_pictures/${username}.jpg")
@@ -339,6 +382,8 @@ class UserDAO {
                 callback(null)
             }
     }
+
+
 
     fun removeFromFavoriteSongs(userId: String, trackUrl: String, callback: (Boolean) -> Unit) {
         db.collection("users")
