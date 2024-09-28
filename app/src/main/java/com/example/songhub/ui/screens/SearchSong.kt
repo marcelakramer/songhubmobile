@@ -169,7 +169,6 @@ fun SearchMusicCard(track: Track, navController: NavController, userId: String) 
 // Extension function to convert Track to Song
 fun Track.toSong(): Song {
     return Song(
-        id = "", // Provide an appropriate ID if necessary
         title = this.name,
         artist = this.artist,
         album = "", // Provide album if available

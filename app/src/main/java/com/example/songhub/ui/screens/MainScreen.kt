@@ -1,7 +1,6 @@
 package com.example.songhub.ui.screens
 
 import android.net.Uri
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -32,13 +31,8 @@ import com.example.songhub.R
 import com.example.songhub.model.Song
 import com.example.songhub.model.User
 import com.example.songhub.model.UserSession
-import com.github.kittinunf.fuel.Fuel
-import com.google.gson.Gson
-import com.google.gson.JsonObject
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.example.songhub.ui.viewmodel.SongViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,25 +43,37 @@ fun MainScreen(modifier: Modifier = Modifier, navController: NavController) {
     var songDAO = SongDAO()
     var songs = remember { mutableStateOf<List<Song>>(emptyList()) }
 
+    val songViewModel = koinViewModel<SongViewModel>()
+
     LaunchedEffect(Unit) {
         if (user != null) {
-            userDAO.getMySongs(user.username) { mySongs ->
-                if (mySongs != null && mySongs.isNotEmpty()) {
-                    songDAO.fetchTracksInfo(mySongs, "499a9407d353802f5f07166c0d8f35c2") { fetchedSongs ->
-                        songs.value = fetchedSongs
+            // Fetch songs from the ViewModel first
+            songViewModel.getAllSongs { viewModelSongs ->
+                // Fetch songs from userDAO
+                userDAO.getMySongs(user.username) { mySongs ->
+                    if (mySongs != null && mySongs.isNotEmpty()) {
+                        songDAO.fetchTracksInfo(mySongs, "499a9407d353802f5f07166c0d8f35c2") { fetchedSongs ->
+                            // Combine the two lists and update the state
+                            songs.value = viewModelSongs + fetchedSongs
+                        }
+                    } else {
+                        println("No songs found for user: ${user.username}")
+                        // If no songs are found for the user, still show ViewModel songs
+                        songs.value = viewModelSongs
                     }
-                } else {
-                    println("No songs found for user: ${user.username}")
                 }
             }
         }
     }
 
 
+
     // Displaying the songs in a LazyColumn
     Box(modifier = modifier.fillMaxSize()) {
         LazyColumn(
-            modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter)
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.TopCenter)
         ) {
             items(songs.value) { item ->
                 if (user != null) {
@@ -78,7 +84,9 @@ fun MainScreen(modifier: Modifier = Modifier, navController: NavController) {
 
         FloatingActionButton(
             onClick = { navController.navigate("addSong") },
-            modifier = Modifier.size(65.dp).align(Alignment.BottomEnd),
+            modifier = Modifier
+                .size(65.dp)
+                .align(Alignment.BottomEnd),
             containerColor = Color(0xFFAAA1FF)
         ) {
             Icon(
