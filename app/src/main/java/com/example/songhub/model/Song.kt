@@ -12,5 +12,6 @@ data class Song(
     var duration: String = "",   // Changed from val to var
     var year: String = "",      // Changed from val to var
     var imageUrl: String? = null, // Changed from val to var
-    var url: String = ""        // Changed from val to var
+    var url: String = "",        // Changed from val to var
+    var isLocal: Boolean = false
 )

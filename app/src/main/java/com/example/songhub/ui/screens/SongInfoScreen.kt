@@ -1,6 +1,8 @@
 package com.example.songhub.ui.screens
 
 import android.net.Uri
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,7 +31,16 @@ import com.example.songhub.model.Song
 import coil.compose.rememberImagePainter
 import com.example.songhub.DAO.UserDAO
 import com.example.songhub.model.UserSession
+import com.example.songhub.ui.viewmodel.SongViewModel
 import com.google.gson.Gson
+import org.koin.androidx.compose.koinViewModel
+
+fun isUrl(id: String): Boolean {
+    val urlPattern = Regex(
+        """^(https?://)?([a-zA-Z0-9.-]+)(:[0-9]+)?(/.*)?$"""
+    )
+    return urlPattern.matches(id)
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,13 +51,23 @@ fun SongInfoScreen(
 ) {
     val songDAO = remember { SongDAO() }
     var song by remember { mutableStateOf<Song?>(null) }
+    val songViewModel = koinViewModel<SongViewModel>()
 
     val songs = mutableListOf<String>().apply { add(id) }
 
     LaunchedEffect(id) {
-        songDAO.fetchTracksInfo(songs, "499a9407d353802f5f07166c0d8f35c2") { fetchedSongs ->
-            song = fetchedSongs[0]
+        if(isUrl(id)) {
+            Log.d("msg", "im a url")
+            songDAO.fetchTracksInfo(songs, "499a9407d353802f5f07166c0d8f35c2") { fetchedSongs ->
+                song = fetchedSongs[0]
+            }
+        } else {
+            Log.d("msg", "im not a url")
+            songViewModel.getSongByTitle(id) { songFromViewModel ->
+                song = songFromViewModel
+            }
         }
+
     }
 
     val scrollState = rememberScrollState()
@@ -192,11 +213,15 @@ fun SongInfoScreen(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
+            var colorF = Color(0xFF9B3EFF)
+            if (song?.isLocal == true) {
+                colorF = Color(0xFF9B3EFF).copy(alpha = 0.5f)
+            }
             OutlinedButton(
                 onClick = { },
-                colors = ButtonDefaults.outlinedButtonColors(
+                    colors = ButtonDefaults.outlinedButtonColors(
                     containerColor = Color.Transparent,
-                    contentColor = Color(0xFF9B3EFF)
+                    contentColor = colorF
                 ),
                 border = BorderStroke(1.dp, Color(0xFF9B3EFF)),
                 shape = RoundedCornerShape(12.dp),
@@ -207,18 +232,19 @@ fun SongInfoScreen(
                 Icon(
                     painter = painterResource(R.drawable.heart),
                     contentDescription = "Favorite Icon",
-                    tint = Color(0xFF9B3EFF),
+                    tint = colorF,
                     modifier = Modifier
                         .size(32.dp)
                         .padding(end = 9.dp)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(text = "Favorite", color = Color(0xFF9B3EFF))
+                Text(text = "Favorite", color = colorF)
             }
 
             OutlinedButton(
                 onClick = {
-                    song?.let {
+                    if (song?.isLocal == false) {
+                        song?.let {
 //                        songDAO.delete(it) { success ->
 //                            if (success) {
 //                                navController.navigate("main")
@@ -226,16 +252,26 @@ fun SongInfoScreen(
 //                                // Handle deletion failure
 //                            }
 //                        }
-                        val userDAO = UserDAO()
-                        var user = UserSession.loggedInUser
-                        if (user != null) {
-                            userDAO.removeFromMySongs(user.username, song!!.url) { removeSuccess ->
-                                if(removeSuccess) {
+                            val userDAO = UserDAO()
+                            var user = UserSession.loggedInUser
+                            if (user != null) {
+                                userDAO.removeFromMySongs(user.username, song!!.url) { removeSuccess ->
+                                    if(removeSuccess) {
+                                        navController.navigate("main")
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        song?.let {
+                            songViewModel.deleteSongByTitle(it.title) { success ->
+                                if(success) {
                                     navController.navigate("main")
                                 }
                             }
                         }
                     }
+
                 },
                 colors = ButtonDefaults.outlinedButtonColors(
                     containerColor = Color.Transparent,

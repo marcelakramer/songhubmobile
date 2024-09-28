@@ -104,11 +104,13 @@ fun MusicCard(item: Song, navController: NavController, user: User) {
     var userDAO = UserDAO()
     val encodedUrl = Uri.encode(item.url)
 
+    val route = if (item.isLocal) item.title else encodedUrl
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
-            .clickable { navController.navigate("songinfo/$encodedUrl") },
+            .clickable { navController.navigate("songinfo/$route") },
         colors = CardDefaults.cardColors(containerColor = Color(0xFF040723)),
     ) {
         Row(

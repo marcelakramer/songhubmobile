@@ -216,13 +216,15 @@ fun SongRegisterScreen(
                         artist = artist,
                         album = album,
                         duration = duration,
-                        year = year
+                        year = year,
+                        isLocal = true
                     ) ?: Song(
                         title = title,
                         artist = artist,
                         album = album,
                         duration = duration,
-                        year = year
+                        year = year,
+                        isLocal = true
                     )
 
                     if (selectedImageUri != null) {

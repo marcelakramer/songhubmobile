@@ -9,3 +9,4 @@ import com.example.songhub.model.Song
 abstract class SongDatabase : RoomDatabase() {
     abstract fun songDao(): SongDAOLocal
 }
+

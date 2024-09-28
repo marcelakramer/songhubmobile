@@ -19,12 +19,16 @@ import com.example.songhub.ui.screens.RegisterScreen
 import com.example.songhub.ui.screens.SongInfoScreen
 import com.example.songhub.ui.screens.SongRegisterScreen
 import com.example.songhub.ui.theme.SonghubTheme
+import com.example.songhub.ui.viewmodel.SongViewModel
 import com.google.firebase.FirebaseApp
 import com.google.gson.Gson
+import org.koin.androidx.compose.koinViewModel
+import org.koin.core.context.startKoin
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         FirebaseApp.initializeApp(this)
         enableEdgeToEdge()
         setContent {
@@ -60,6 +64,7 @@ class MainActivity : ComponentActivity() {
                         MainLayout(title = "New Song", navController = navController) {
                             val songJson = backStackEntry.arguments?.getString("songJson") ?: ""
                             val song = Gson().fromJson(songJson, Song::class.java)
+                            val viewModel = koinViewModel<SongViewModel>()
                             SongRegisterScreen(modifier = Modifier, navController = navController, song = song ?: null)
                         }
                     }
