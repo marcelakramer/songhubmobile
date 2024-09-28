@@ -37,7 +37,7 @@ class SongDAO {
                 val songs = mutableListOf<Song>()
                 for (document in result) {
                     val song = document.toObject(Song::class.java)
-                    song.id = document.id // Atribui o ID do documento ao objeto Song
+                    song.title = document.id // Atribui o ID do documento ao objeto Song
                     songs.add(song)
                 }
                 callback(songs)
@@ -50,7 +50,7 @@ class SongDAO {
     fun add(song: Song, callback: (Boolean) -> Unit) {
         db.collection("songs").add(song)
             .addOnSuccessListener { documentReference ->
-                song.id = documentReference.id
+                song.title = documentReference.id
                 callback(true)
             }
             .addOnFailureListener {
@@ -59,7 +59,7 @@ class SongDAO {
     }
 
     fun update(song: Song, callback: (Boolean) -> Unit) {
-        song.id?.let { id ->
+        song.title?.let { id ->
             db.collection("songs").document(id).set(song)
                 .addOnSuccessListener {
                     callback(true)
@@ -71,7 +71,7 @@ class SongDAO {
     }
 
     fun delete(song: Song, callback: (Boolean) -> Unit) {
-        song.id?.let { id ->
+        song.title?.let { id ->
             db.collection("songs").document(id).delete()
                 .addOnSuccessListener {
                     callback(true)
@@ -88,7 +88,7 @@ class SongDAO {
             .addOnSuccessListener { document ->
                 if (document.exists()) {
                     val song = document.toObject(Song::class.java)
-                    song?.id = document.id
+                    song?.title = document.id
                     callback(song)
                 } else {
                     callback(null)

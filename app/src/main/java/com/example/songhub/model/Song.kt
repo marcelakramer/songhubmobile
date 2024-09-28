@@ -1,12 +1,16 @@
 package com.example.songhub.model
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "songs")
 data class Song(
-    var id: String? = null, // ID do documento Firestore
-    val title: String = "",
-    val artist: String = "",
-    val album: String = "",
-    val duration: String = "",
-    val year: String = "",
-    val imageUrl: String? = null, // URL da imagem
-    val url: String = ""
+    @PrimaryKey
+    var title: String = "",     // Changed from val to var
+    var artist: String = "",    // Changed from val to var
+    var album: String = "",     // Changed from val to var
+    var duration: String = "",   // Changed from val to var
+    var year: String = "",      // Changed from val to var
+    var imageUrl: String? = null, // Changed from val to var
+    var url: String = ""        // Changed from val to var
 )

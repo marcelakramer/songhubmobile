@@ -42,6 +42,8 @@ import androidx.navigation.NavController
 import com.example.songhub.DAO.SongDAO
 import com.example.songhub.R
 import com.example.songhub.model.Song
+import com.example.songhub.ui.viewmodel.SongViewModel
+import org.koin.androidx.compose.koinViewModel
 
 val songDAO:SongDAO = SongDAO()
 
@@ -52,6 +54,10 @@ fun SongRegisterScreen(
     navController: NavController,
     song: Song? = null
 ) {
+    // Get the ViewModel instance using Koin
+    val viewModel = koinViewModel<SongViewModel>()
+
+    // State variables to hold form data
     var title by rememberSaveable { mutableStateOf(song?.title ?: "") }
     var artist by rememberSaveable { mutableStateOf(song?.artist ?: "") }
     var album by rememberSaveable { mutableStateOf(song?.album ?: "") }
@@ -85,6 +91,7 @@ fun SongRegisterScreen(
 
         Spacer(modifier = Modifier.height(36.dp))
 
+        // Form fields for the song attributes
         OutlinedTextField(
             value = title,
             onValueChange = { title = it },
@@ -221,28 +228,11 @@ fun SongRegisterScreen(
                     if (selectedImageUri != null) {
                         songDAO.uploadImage(selectedImageUri!!) { url ->
                             val songWithImage = songToSave.copy(imageUrl = url)
-                            if (song != null) {
-                                songDAO.update(songWithImage) { success ->
-                                    // Handle update success or failure
-                                }
-                            } else {
-                                songDAO.add(songWithImage) { success ->
-                                    // Handle add success or failure
-                                }
-                            }
+                            saveOrUpdateSong(viewModel, song, songWithImage, navController)
                         }
                     } else {
-                        if (song != null) {
-                            songDAO.update(songToSave) { success ->
-                                // Handle update success or failure
-                            }
-                        } else {
-                            songDAO.add(songToSave) { success ->
-                                // Handle add success or failure
-                            }
-                        }
+                        saveOrUpdateSong(viewModel, song, songToSave, navController)
                     }
-                    navController.navigate("main")
                 }
             },
             modifier = Modifier
@@ -261,6 +251,32 @@ fun SongRegisterScreen(
                 fontWeight = FontWeight.W400,
                 fontFamily = FontFamily.SansSerif
             )
+        }
+    }
+}
+
+// Helper function to save or update the song using the ViewModel
+private fun saveOrUpdateSong(
+    viewModel: SongViewModel,
+    existingSong: Song?,
+    songToSave: Song,
+    navController: NavController
+) {
+    if (existingSong != null) {
+        // Update song if it already exists
+        viewModel.updateSong(songToSave) { success ->
+            // Handle success or failure
+            if (success) {
+                navController.navigate("main")
+            }
+        }
+    } else {
+        // Add new song if it does not exist
+        viewModel.addSong(songToSave) { success ->
+            // Handle success or failure
+            if (success) {
+                navController.navigate("main")
+            }
         }
     }
 }
