@@ -1,6 +1,7 @@
 package com.example.songhub.ui.screens
 
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -106,6 +107,8 @@ fun MusicCard(item: Song, navController: NavController, user: User) {
 
     val route = if (item.isLocal) item.title else encodedUrl
 
+    Log.d("msg", "WAKEUP IT'S THE FIRST OF DA MONTH $route")
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -177,6 +180,18 @@ fun MusicCard(item: Song, navController: NavController, user: User) {
                 )
             }
             Spacer(modifier = Modifier.width(8.dp))
+
+            val iconToShow = remember { mutableStateOf(R.drawable.heart_outline) }
+            LaunchedEffect(item.url) {
+                userDAO.isSongFavorited(user.username, item.url) { isFavorited ->
+                    if (isFavorited) {
+                        iconToShow.value = R.drawable.heart_svgrepo_com
+                    } else {
+                        iconToShow.value = R.drawable.heart_outline
+                    }
+                }
+            }
+
             if(!item.isLocal) {
                 IconButton(
                     onClick = {
@@ -195,16 +210,17 @@ fun MusicCard(item: Song, navController: NavController, user: User) {
                         .size(40.dp)
                         .padding(0.dp)
                 ) {
-                    Icon(
-                        painter = painterResource(R.drawable.heart_outline),
-                        contentDescription = "Favorite",
-                        tint = Color(0xFF9B3EFF),
-                        modifier = Modifier.size(22.dp)
-                    )
-                }
+                        Icon(
+                            painter = painterResource(iconToShow.value),
+                            contentDescription = "Favorite",
+                            tint = Color(0xFF9B3EFF),
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+            }
+            }
+
             }
 
 
         }
-    }
-}
