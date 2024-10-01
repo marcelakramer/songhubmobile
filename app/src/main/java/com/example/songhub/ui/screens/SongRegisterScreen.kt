@@ -187,25 +187,6 @@ fun SongRegisterScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-            Icon(
-                painter = painterResource(R.drawable.upload),
-                contentDescription = "Upload cover",
-                tint = Color.White,
-                modifier = Modifier
-                    .size(20.dp)
-                    .align(Alignment.CenterVertically)
-            )
-            Spacer(modifier = Modifier.size(8.dp))
-            Text(
-                modifier = Modifier.clickable { imagePickerLauncher.launch("image/*") },
-                text = "Upload cover",
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color(0xFFFFFFFF),
-                fontWeight = FontWeight.W400,
-            )
-        }
-
         Spacer(modifier = Modifier.height(30.dp))
 
         Button(
