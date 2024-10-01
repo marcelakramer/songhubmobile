@@ -177,10 +177,11 @@ fun MusicCard(item: Song, navController: NavController, user: User) {
                 )
             }
             Spacer(modifier = Modifier.width(8.dp))
-            IconButton(
-                onClick = {
-                    user?.let { currentUser ->
-                        val trackUrl = item.url
+            if(!item.isLocal) {
+                IconButton(
+                    onClick = {
+                        user?.let { currentUser ->
+                            val trackUrl = item.url
                             userDAO.addToFavoriteSongs(currentUser.username, trackUrl) { success ->
                                 if (success) {
                                     println("Song added to favorites")
@@ -188,19 +189,21 @@ fun MusicCard(item: Song, navController: NavController, user: User) {
                                     println("Failed to add song to favorites")
                                 }
                             }
-                    }
-                },
-                modifier = Modifier
-                    .size(40.dp)
-                    .padding(0.dp)
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.heart_outline),
-                    contentDescription = "Favorite",
-                    tint = Color(0xFF9B3EFF),
-                    modifier = Modifier.size(22.dp)
-                )
+                        }
+                    },
+                    modifier = Modifier
+                        .size(40.dp)
+                        .padding(0.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.heart_outline),
+                        contentDescription = "Favorite",
+                        tint = Color(0xFF9B3EFF),
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
             }
+
 
         }
     }
