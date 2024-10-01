@@ -109,6 +109,15 @@ fun MusicCard(item: Song, navController: NavController, user: User) {
 
     Log.d("msg", "WAKEUP IT'S THE FIRST OF DA MONTH $route")
 
+    var isFavorited = remember { mutableStateOf(false) }
+
+    // Check if the song is favorited when the card is first composed
+    LaunchedEffect(item.url) {
+        userDAO.isSongFavorited(user.username, item.url) { isFavored ->
+            isFavorited.value = isFavored
+        }
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -181,46 +190,43 @@ fun MusicCard(item: Song, navController: NavController, user: User) {
             }
             Spacer(modifier = Modifier.width(8.dp))
 
-            val iconToShow = remember { mutableStateOf(R.drawable.heart_outline) }
-            LaunchedEffect(item.url) {
-                userDAO.isSongFavorited(user.username, item.url) { isFavorited ->
-                    if (isFavorited) {
-                        iconToShow.value = R.drawable.heart_svgrepo_com
-                    } else {
-                        iconToShow.value = R.drawable.heart_outline
-                    }
-                }
-            }
-
-            if(!item.isLocal) {
-                IconButton(
-                    onClick = {
-                        user?.let { currentUser ->
-                            val trackUrl = item.url
+            IconButton(
+                onClick = {
+                    user?.let { currentUser ->
+                        val trackUrl = item.url
+                        if (isFavorited.value) {
+                            userDAO.removeFromFavoriteSongs(currentUser.username, trackUrl) { success ->
+                                if (success) {
+                                    isFavorited.value = false
+                                    println("Song removed from favorites")
+                                }
+                            }
+                        } else {
                             userDAO.addToFavoriteSongs(currentUser.username, trackUrl) { success ->
                                 if (success) {
+                                    isFavorited.value = true
                                     println("Song added to favorites")
-                                } else {
-                                    println("Failed to add song to favorites")
                                 }
                             }
                         }
-                    },
-                    modifier = Modifier
-                        .size(40.dp)
-                        .padding(0.dp)
-                ) {
-                        Icon(
-                            painter = painterResource(iconToShow.value),
-                            contentDescription = "Favorite",
-                            tint = Color(0xFF9B3EFF),
-                            modifier = Modifier.size(22.dp)
-                        )
                     }
+                },
+                modifier = Modifier
+                    .size(40.dp)
+                    .padding(0.dp)
+            ) {
+                val iconResource = if (isFavorited.value) {
+                    R.drawable.heart_svgrepo_com // Filled heart icon
+                } else {
+                    R.drawable.heart_outline // Outline heart icon
+                }
+                Icon(
+                    painter = painterResource(iconResource),
+                    contentDescription = "Favorite",
+                    tint = Color(0xFF9B3EFF),
+                    modifier = Modifier.size(22.dp)
+                )
             }
-            }
-
-            }
-
-
         }
+    }
+}
