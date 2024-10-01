@@ -34,6 +34,8 @@ import com.example.songhub.model.UserSession
 import com.example.songhub.ui.viewmodel.SongViewModel
 import com.google.gson.Gson
 import org.koin.androidx.compose.koinViewModel
+import android.content.Context
+import androidx.compose.ui.platform.LocalContext
 
 fun isUrl(id: String): Boolean {
     val urlPattern = Regex(
@@ -54,6 +56,8 @@ fun SongInfoScreen(
     val songViewModel = koinViewModel<SongViewModel>()
 
     val songs = mutableListOf<String>().apply { add(id) }
+    val context = LocalContext.current
+
 
     LaunchedEffect(id) {
         if(isUrl(id)) {
@@ -255,9 +259,17 @@ fun SongInfoScreen(
                             val userDAO = UserDAO()
                             var user = UserSession.loggedInUser
                             if (user != null) {
-                                userDAO.removeFromMySongs(user.username, song!!.url) { removeSuccess ->
-                                    if(removeSuccess) {
-                                        navController.navigate("main")
+                                userDAO.isSongFavorited(user.username, song!!.url) { isFavorited ->
+                                    if (isFavorited) {
+                                        Toast.makeText(context, "This song is favorited and cannot be removed.", Toast.LENGTH_LONG).show()
+                                    } else {
+                                        userDAO.removeFromMySongs(user.username, song!!.url) { removeSuccess ->
+                                            if (removeSuccess) {
+                                                navController.navigate("main")
+                                            } else {
+                                                println("Failed to remove song from My Songs.")
+                                            }
+                                        }
                                     }
                                 }
                             }
