@@ -39,7 +39,7 @@ import androidx.compose.ui.platform.LocalContext
 
 fun isUrl(id: String): Boolean {
     val urlPattern = Regex(
-        """^(https?://)?([a-zA-Z0-9.-]+)(:[0-9]+)?(/.*)?$"""
+        """^(https?://)?([a-zA-Z0-9.-]+)(\.[a-zA-Z]{2,})(:[0-9]+)?(/.*)?$"""
     )
     return urlPattern.matches(id)
 }
@@ -60,6 +60,7 @@ fun SongInfoScreen(
 
 
     LaunchedEffect(id) {
+        Log.d("msg", "the coming url is $id")
         if(isUrl(id)) {
             Log.d("msg", "im a url")
             songDAO.fetchTracksInfo(songs, "499a9407d353802f5f07166c0d8f35c2") { fetchedSongs ->
@@ -249,13 +250,6 @@ fun SongInfoScreen(
                 onClick = {
                     if (song?.isLocal == false) {
                         song?.let {
-//                        songDAO.delete(it) { success ->
-//                            if (success) {
-//                                navController.navigate("main")
-//                            } else {
-//                                // Handle deletion failure
-//                            }
-//                        }
                             val userDAO = UserDAO()
                             var user = UserSession.loggedInUser
                             if (user != null) {
