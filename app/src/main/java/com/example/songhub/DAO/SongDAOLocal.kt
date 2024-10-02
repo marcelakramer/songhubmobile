@@ -13,6 +13,9 @@ interface SongDAOLocal {
     @Query("SELECT * FROM songs WHERE title = :title")
     fun getSongByTitle(title: String): Song?
 
+    @Query("SELECT * FROM songs WHERE id = :id")
+    fun getSongById(id: String): Song?
+
     @Query("SELECT * FROM songs")
     fun getAllSongs(): List<Song>
 

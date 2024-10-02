@@ -93,7 +93,7 @@ fun FavoritesScreen(modifier: Modifier = Modifier, navController: NavController)
 @Composable
 fun FavoritesMusicCard(item: Song, navController: NavController, user: User) {
     var userDAO = UserDAO()
-    val encodedUrl = Uri.encode(item.url)
+    val encodedUrl = Uri.encode(item.id)
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -168,7 +168,7 @@ fun FavoritesMusicCard(item: Song, navController: NavController, user: User) {
             IconButton(
                 onClick = {
                     user?.let { currentUser ->
-                        val trackUrl = item.url
+                        val trackUrl = item.id
 
                         userDAO.isSongFavorited(currentUser.username, trackUrl) { isFavorited ->
                             if (isFavorited) {

@@ -65,7 +65,8 @@ fun SongInfoScreen(
                 song = fetchedSongs[0]
             }
         } else {
-            songViewModel.getSongByTitle(id) { songFromViewModel ->
+            songViewModel.getSongById(id) { songFromViewModel ->
+                Log.d("M", "TU QUER MUSICA? PEGA $songFromViewModel")
                 song = songFromViewModel
             }
         }
@@ -250,11 +251,11 @@ fun SongInfoScreen(
                             val userDAO = UserDAO()
                             var user = UserSession.loggedInUser
                             if (user != null) {
-                                userDAO.isSongFavorited(user.username, song!!.url) { isFavorited ->
+                                userDAO.isSongFavorited(user.username, song!!.id) { isFavorited ->
                                     if (isFavorited) {
                                         Toast.makeText(context, "This song is favorited and cannot be removed.", Toast.LENGTH_LONG).show()
                                     } else {
-                                        userDAO.removeFromMySongs(user.username, song!!.url) { removeSuccess ->
+                                        userDAO.removeFromMySongs(user.username, song!!.id) { removeSuccess ->
                                             if (removeSuccess) {
                                                 navController.navigate("main")
                                             } else {

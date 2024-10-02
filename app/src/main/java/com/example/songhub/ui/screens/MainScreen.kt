@@ -96,14 +96,14 @@ fun MainScreen(modifier: Modifier = Modifier, navController: NavController) {
 @Composable
 fun MusicCard(item: Song, navController: NavController, user: User) {
     var userDAO = UserDAO()
-    val encodedUrl = Uri.encode(item.url)
+    val encodedUrl = Uri.encode(item.id)
 
-    val route = if (item.isLocal) item.title else encodedUrl
+    val route = if (item.isLocal) item.id else encodedUrl
 
     var isFavorited = remember { mutableStateOf(false) }
 
-    LaunchedEffect(item.url) {
-        userDAO.isSongFavorited(user.username, item.url) { isFavored ->
+    LaunchedEffect(item.id) {
+        userDAO.isSongFavorited(user.username, item.id) { isFavored ->
             isFavorited.value = isFavored
         }
     }
@@ -180,11 +180,11 @@ fun MusicCard(item: Song, navController: NavController, user: User) {
             }
             Spacer(modifier = Modifier.width(8.dp))
 
-            if(item.isLocal) {
+            if(!item.isLocal) {
                 IconButton(
                     onClick = {
                         user?.let { currentUser ->
-                            val trackUrl = item.url
+                            val trackUrl = item.id
                             if (isFavorited.value) {
                                 userDAO.removeFromFavoriteSongs(currentUser.username, trackUrl) { success ->
                                     if (success) {

@@ -106,7 +106,7 @@ class SongDAO {
             val track = parts[1].replace("+", "%20")
             return artist to track
         }
-        throw IllegalArgumentException("URL malformada: $url")
+        throw IllegalArgumentException("malformed url: $url")
     }
 
     private fun getTrackInfo(artist: String, track: String, apiKey: String): JsonObject? {
@@ -160,10 +160,11 @@ class SongDAO {
                         title = trackName,
                         artist = artistName,
                         imageUrl = imageUrl,
-                        url = url,
+                        id = url,
                         album = album,
                         duration = formattedDuration,
-                        year = year
+                        year = year,
+                        isLocal = false
                     )
                 }
             }

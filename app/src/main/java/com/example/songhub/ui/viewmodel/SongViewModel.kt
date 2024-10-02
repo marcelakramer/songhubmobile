@@ -37,6 +37,13 @@ class SongViewModel(val repository: SongRepository) : ViewModel() {
         }
     }
 
+    fun getSongById(id: String, onResult: (Song?) -> Unit) {
+        viewModelScope.launch {
+            val song = repository.getSongById(id)
+            onResult(song)
+        }
+    }
+
     fun getAllSongs(onResult: (List<Song>) -> Unit) {
         viewModelScope.launch {
             val songs = repository.getAllSongs()

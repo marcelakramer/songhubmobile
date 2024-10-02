@@ -16,6 +16,11 @@ class SongRepository(private val songDao: SongDAOLocal) {
             songDao.getSongByTitle(title)
         }
     }
+    suspend fun getSongById(id: String): Song? {
+        return withContext(Dispatchers.IO) {
+            songDao.getSongById(id)
+        }
+    }
     suspend fun getAllSongs(): List<Song> {
         return withContext(Dispatchers.IO) {
             songDao.getAllSongs()

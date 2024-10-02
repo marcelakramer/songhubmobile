@@ -44,6 +44,7 @@ import com.example.songhub.R
 import com.example.songhub.model.Song
 import com.example.songhub.ui.viewmodel.SongViewModel
 import org.koin.androidx.compose.koinViewModel
+import java.util.UUID
 
 val songDAO:SongDAO = SongDAO()
 
@@ -61,12 +62,7 @@ fun SongRegisterScreen(
     var album by rememberSaveable { mutableStateOf(song?.album ?: "") }
     var duration by rememberSaveable { mutableStateOf(song?.duration ?: "") }
     var year by rememberSaveable { mutableStateOf(song?.year ?: "") }
-    var selectedImageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
-    val context = LocalContext.current
 
-    val imagePickerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        selectedImageUri = uri
-    }
 
     val areFieldsFilled = title.isNotEmpty() && artist.isNotEmpty() && album.isNotEmpty() &&
             duration.isNotEmpty() && year.isNotEmpty()
@@ -190,6 +186,7 @@ fun SongRegisterScreen(
             onClick = {
                 if (areFieldsFilled) {
                     val songToSave = song?.copy(
+                        id= UUID.randomUUID().toString(),
                         title = title,
                         artist = artist,
                         album = album,
@@ -197,6 +194,7 @@ fun SongRegisterScreen(
                         year = year,
                         isLocal = true
                     ) ?: Song(
+                        id= UUID.randomUUID().toString(),
                         title = title,
                         artist = artist,
                         album = album,
@@ -205,14 +203,7 @@ fun SongRegisterScreen(
                         isLocal = true
                     )
 
-                    if (selectedImageUri != null) {
-                        songDAO.uploadImage(selectedImageUri!!) { url ->
-                            val songWithImage = songToSave.copy(imageUrl = url)
-                            saveOrUpdateSong(viewModel, song, songWithImage, navController)
-                        }
-                    } else {
-                        saveOrUpdateSong(viewModel, song, songToSave, navController)
-                    }
+                    saveOrUpdateSong(viewModel, song, songToSave, navController)
                 }
             },
             modifier = Modifier
