@@ -94,6 +94,9 @@ fun FavoritesScreen(modifier: Modifier = Modifier, navController: NavController)
 fun FavoritesMusicCard(item: Song, navController: NavController, user: User) {
     var userDAO = UserDAO()
     val encodedUrl = Uri.encode(item.id)
+
+    var isFavorited = remember { mutableStateOf(true) }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -169,29 +172,18 @@ fun FavoritesMusicCard(item: Song, navController: NavController, user: User) {
                 onClick = {
                     user?.let { currentUser ->
                         val trackUrl = item.id
-
-                        userDAO.isSongFavorited(currentUser.username, trackUrl) { isFavorited ->
-                            if (isFavorited) {
-                                userDAO.removeFromFavoriteSongs(
-                                    currentUser.username,
-                                    trackUrl
-                                ) { removeSuccess ->
-                                    if (removeSuccess) {
-                                        println("Song removed from favorites")
-                                    } else {
-                                        println("Failed to remove song from favorites")
-                                    }
+                        if (isFavorited.value) {
+                            userDAO.removeFromFavoriteSongs(currentUser.username, trackUrl) { success ->
+                                if (success) {
+                                    isFavorited.value = false
+                                    println("Song removed from favorites")
                                 }
-                            } else {
-                                userDAO.addToFavoriteSongs(
-                                    currentUser.username,
-                                    trackUrl
-                                ) { addSuccess ->
-                                    if (addSuccess) {
-                                        println("Song added to favorites")
-                                    } else {
-                                        println("Failed to add song to favorites")
-                                    }
+                            }
+                        } else {
+                            userDAO.addToFavoriteSongs(currentUser.username, trackUrl) { success ->
+                                if (success) {
+                                    isFavorited.value = true
+                                    println("Song added to favorites")
                                 }
                             }
                         }
@@ -201,8 +193,13 @@ fun FavoritesMusicCard(item: Song, navController: NavController, user: User) {
                     .size(40.dp)
                     .padding(0.dp)
             ) {
+                val iconResource = if (isFavorited.value) {
+                    R.drawable.heart_svgrepo_com
+                } else {
+                    R.drawable.heart_outline
+                }
                 Icon(
-                    painter = painterResource(R.drawable.heart_outline),
+                    painter = painterResource(iconResource),
                     contentDescription = "Favorite",
                     tint = Color(0xFF9B3EFF),
                     modifier = Modifier.size(22.dp)
