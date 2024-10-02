@@ -48,18 +48,14 @@ fun MainScreen(modifier: Modifier = Modifier, navController: NavController) {
 
     LaunchedEffect(Unit) {
         if (user != null) {
-            // Fetch songs from the ViewModel first
             songViewModel.getAllSongs { viewModelSongs ->
-                // Fetch songs from userDAO
                 userDAO.getMySongs(user.username) { mySongs ->
                     if (mySongs != null && mySongs.isNotEmpty()) {
                         songDAO.fetchTracksInfo(mySongs, "499a9407d353802f5f07166c0d8f35c2") { fetchedSongs ->
-                            // Combine the two lists and update the state
                             songs.value = viewModelSongs + fetchedSongs
                         }
                     } else {
                         println("No songs found for user: ${user.username}")
-                        // If no songs are found for the user, still show ViewModel songs
                         songs.value = viewModelSongs
                     }
                 }
@@ -67,9 +63,6 @@ fun MainScreen(modifier: Modifier = Modifier, navController: NavController) {
         }
     }
 
-
-
-    // Displaying the songs in a LazyColumn
     Box(modifier = modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier
@@ -107,11 +100,8 @@ fun MusicCard(item: Song, navController: NavController, user: User) {
 
     val route = if (item.isLocal) item.title else encodedUrl
 
-    Log.d("msg", "WAKEUP IT'S THE FIRST OF DA MONTH $route")
-
     var isFavorited = remember { mutableStateOf(false) }
 
-    // Check if the song is favorited when the card is first composed
     LaunchedEffect(item.url) {
         userDAO.isSongFavorited(user.username, item.url) { isFavored ->
             isFavorited.value = isFavored
@@ -190,43 +180,46 @@ fun MusicCard(item: Song, navController: NavController, user: User) {
             }
             Spacer(modifier = Modifier.width(8.dp))
 
-            IconButton(
-                onClick = {
-                    user?.let { currentUser ->
-                        val trackUrl = item.url
-                        if (isFavorited.value) {
-                            userDAO.removeFromFavoriteSongs(currentUser.username, trackUrl) { success ->
-                                if (success) {
-                                    isFavorited.value = false
-                                    println("Song removed from favorites")
+            if(item.isLocal) {
+                IconButton(
+                    onClick = {
+                        user?.let { currentUser ->
+                            val trackUrl = item.url
+                            if (isFavorited.value) {
+                                userDAO.removeFromFavoriteSongs(currentUser.username, trackUrl) { success ->
+                                    if (success) {
+                                        isFavorited.value = false
+                                        println("Song removed from favorites")
+                                    }
                                 }
-                            }
-                        } else {
-                            userDAO.addToFavoriteSongs(currentUser.username, trackUrl) { success ->
-                                if (success) {
-                                    isFavorited.value = true
-                                    println("Song added to favorites")
+                            } else {
+                                userDAO.addToFavoriteSongs(currentUser.username, trackUrl) { success ->
+                                    if (success) {
+                                        isFavorited.value = true
+                                        println("Song added to favorites")
+                                    }
                                 }
                             }
                         }
+                    },
+                    modifier = Modifier
+                        .size(40.dp)
+                        .padding(0.dp)
+                ) {
+                    val iconResource = if (isFavorited.value) {
+                        R.drawable.heart_svgrepo_com
+                    } else {
+                        R.drawable.heart_outline
                     }
-                },
-                modifier = Modifier
-                    .size(40.dp)
-                    .padding(0.dp)
-            ) {
-                val iconResource = if (isFavorited.value) {
-                    R.drawable.heart_svgrepo_com // Filled heart icon
-                } else {
-                    R.drawable.heart_outline // Outline heart icon
+                    Icon(
+                        painter = painterResource(iconResource),
+                        contentDescription = "Favorite",
+                        tint = Color(0xFF9B3EFF),
+                        modifier = Modifier.size(22.dp)
+                    )
                 }
-                Icon(
-                    painter = painterResource(iconResource),
-                    contentDescription = "Favorite",
-                    tint = Color(0xFF9B3EFF),
-                    modifier = Modifier.size(22.dp)
-                )
             }
+
         }
     }
 }

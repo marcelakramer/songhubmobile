@@ -186,7 +186,6 @@ class UserDAO {
     fun addToMySongs(userId: String, trackUrl: String, callback: (Boolean) -> Unit) {
         val db = FirebaseFirestore.getInstance()
 
-        // Query to find the user document by username
         db.collection("users")
             .whereEqualTo("username", userId)
             .get()
@@ -197,35 +196,27 @@ class UserDAO {
                     return@addOnSuccessListener
                 }
 
-                // Assuming there is only one user with the given username
                 val userDoc = querySnapshot.documents.firstOrNull() ?: return@addOnSuccessListener
-                val userId = userDoc.id // Get the document ID
+                val userId = userDoc.id
 
-                // Retrieve the existing favorites list or create a new one
                 val mySongs = userDoc.get("mysongs") as? MutableList<String> ?: mutableListOf()
 
-                // Add the new song URL to the favorites list if it's not already there
                 if (trackUrl !in mySongs) {
                     mySongs.add(trackUrl)
 
-                    // Update the user document with the new favorites list
                     db.collection("users").document(userId)
                         .update("mysongs", mySongs)
                         .addOnSuccessListener {
-                            Log.d("Firestore", "Song added successfully")
                             callback(true)
                         }
                         .addOnFailureListener { e ->
-                            Log.e("Firestore", "Error adding song", e)
                             callback(false)
                         }
                 } else {
-                    Log.d("Firestore", "Song URL is already in my songs")
                     callback(true)
                 }
             }
             .addOnFailureListener { e ->
-                Log.e("Firestore", "Error querying user by username", e)
                 callback(false)
             }
     }
@@ -242,16 +233,13 @@ class UserDAO {
                 }
 
                 val userDoc = querySnapshot.documents.firstOrNull() ?: return@addOnSuccessListener
-                val userId = userDoc.id // Get the document ID
+                val userId = userDoc.id
 
-                // Retrieve the existing favorites list
                 val favorites = userDoc.get("mysongs") as? MutableList<String> ?: mutableListOf()
 
-                // Remove the song URL if it's in the favorites list
                 if (trackUrl in favorites) {
                     favorites.remove(trackUrl)
 
-                    // Update the user document with the new favorites list
                     db.collection("users").document(userId)
                         .update("mysongs", favorites)
                         .addOnSuccessListener {
@@ -299,10 +287,8 @@ class UserDAO {
                     return@addOnSuccessListener
                 }
 
-                // Assuming there is only one user with the given username
                 val userDoc = querySnapshot.documents.firstOrNull() ?: return@addOnSuccessListener
 
-                // Retrieve the existing favorites list or return an empty list
                 val mySongs = userDoc.get("mysongs") as? List<String> ?: emptyList()
 
                 callback(mySongs)
@@ -327,16 +313,13 @@ class UserDAO {
                 }
 
                 val userDoc = querySnapshot.documents.firstOrNull() ?: return@addOnSuccessListener
-                val userId = userDoc.id // Get the document ID
+                val userId = userDoc.id
 
-                // Retrieve the existing favorites list or create a new one
                 val favorites = userDoc.get("favorites") as? MutableList<String> ?: mutableListOf()
 
-                // Add the new song URL to the favorites list if it's not already there
                 if (trackUrl !in favorites) {
                     favorites.add(trackUrl)
 
-                    // Update the user document with the new favorites list
                     db.collection("users").document(userId)
                         .update("favorites", favorites)
                         .addOnSuccessListener {
@@ -369,10 +352,8 @@ class UserDAO {
                     return@addOnSuccessListener
                 }
 
-                // Assuming there is only one user with the given username
                 val userDoc = querySnapshot.documents.firstOrNull() ?: return@addOnSuccessListener
 
-                // Retrieve the existing favorites list or return an empty list
                 val mySongs = userDoc.get("favorites") as? List<String> ?: emptyList()
 
                 callback(mySongs)
@@ -397,16 +378,13 @@ class UserDAO {
                 }
 
                 val userDoc = querySnapshot.documents.firstOrNull() ?: return@addOnSuccessListener
-                val userId = userDoc.id // Get the document ID
+                val userId = userDoc.id
 
-                // Retrieve the existing favorites list
                 val favorites = userDoc.get("favorites") as? MutableList<String> ?: mutableListOf()
 
-                // Remove the song URL if it's in the favorites list
                 if (trackUrl in favorites) {
                     favorites.remove(trackUrl)
 
-                    // Update the user document with the new favorites list
                     db.collection("users").document(userId)
                         .update("favorites", favorites)
                         .addOnSuccessListener {
@@ -433,14 +411,12 @@ class UserDAO {
             .whereEqualTo("username", userId)
             .get()
             .addOnSuccessListener { querySnapshot ->
-                // Verificando se retornou algum documento
                 if (querySnapshot.isEmpty) {
                     Log.e("Firestore", "No user found with username: $userId")
                     callback(false)
                     return@addOnSuccessListener
                 }
 
-                // Verificando o documento retornado
                 val userDoc = querySnapshot.documents.firstOrNull()
                 if (userDoc == null) {
                     Log.e("Firestore", "No document found for user: $userId")
@@ -448,7 +424,6 @@ class UserDAO {
                     return@addOnSuccessListener
                 }
 
-                // Verificando se o campo favorites existe e se é uma lista
                 val favorites = userDoc.get("favorites") as? List<String>
                 if (favorites == null) {
                     Log.e("Firestore", "Favorites field is missing or is not a list for user: $userId")
@@ -456,7 +431,6 @@ class UserDAO {
                     return@addOnSuccessListener
                 }
 
-                // Verifica se a URL da música está na lista de favoritos
                 if (trackUrl in favorites) {
                     callback(true)
                 } else {

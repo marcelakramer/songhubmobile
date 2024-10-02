@@ -54,7 +54,6 @@ fun FavoritesScreen(modifier: Modifier = Modifier, navController: NavController)
             userDAO.getMyFavoriteSongs(user.username) { mySongs ->
                 if (mySongs != null && mySongs.isNotEmpty()) {
                     songDAO.fetchTracksInfo(mySongs, "499a9407d353802f5f07166c0d8f35c2") { fetchedSongs ->
-                        // Update your songs state with the fetched songs
                         songs.value = fetchedSongs
                     }
                 } else {
@@ -65,7 +64,6 @@ fun FavoritesScreen(modifier: Modifier = Modifier, navController: NavController)
     }
 
 
-    // Displaying the songs in a LazyColumn
     Box(modifier = modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter)
@@ -174,7 +172,6 @@ fun FavoritesMusicCard(item: Song, navController: NavController, user: User) {
 
                         userDAO.isSongFavorited(currentUser.username, trackUrl) { isFavorited ->
                             if (isFavorited) {
-                                // Se a música já está favoritada, remove
                                 userDAO.removeFromFavoriteSongs(
                                     currentUser.username,
                                     trackUrl
@@ -186,7 +183,6 @@ fun FavoritesMusicCard(item: Song, navController: NavController, user: User) {
                                     }
                                 }
                             } else {
-                                // Se a música não está favoritada, adiciona
                                 userDAO.addToFavoriteSongs(
                                     currentUser.username,
                                     trackUrl

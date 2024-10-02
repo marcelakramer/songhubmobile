@@ -6,12 +6,12 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "songs")
 data class Song(
     @PrimaryKey
-    var title: String = "",     // Changed from val to var
-    var artist: String = "",    // Changed from val to var
-    var album: String = "",     // Changed from val to var
-    var duration: String = "",   // Changed from val to var
-    var year: String = "",      // Changed from val to var
-    var imageUrl: String? = null, // Changed from val to var
-    var url: String = "",        // Changed from val to var
+    var title: String = "",
+    var artist: String = "",
+    var album: String = "",
+    var duration: String = "",
+    var year: String = "",
+    var imageUrl: String? = null,
+    var url: String = "",
     var isLocal: Boolean = false
 )

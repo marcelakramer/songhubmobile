@@ -36,14 +36,13 @@ fun SearchSong(modifier: Modifier = Modifier, navController: NavController) {
     var items by remember { mutableStateOf<List<Track>>(emptyList()) }
     val coroutineScope = rememberCoroutineScope()
 
-    val userId = UserSession.loggedInUser?.username ?: "" // Adjust based on how you store user ID
+    val userId = UserSession.loggedInUser?.username ?: ""
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        // Search Bar
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -73,7 +72,7 @@ fun SearchSong(modifier: Modifier = Modifier, navController: NavController) {
                                 val response = RetrofitInstance.api.searchTracks(
                                     method = "track.search",
                                     trackName = query.text,
-                                    apiKey = "499a9407d353802f5f07166c0d8f35c2", // Replace with your API key
+                                    apiKey = "499a9407d353802f5f07166c0d8f35c2",
                                     format = "json"
                                 )
 
@@ -93,7 +92,6 @@ fun SearchSong(modifier: Modifier = Modifier, navController: NavController) {
             )
         }
 
-        // Display search results
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
@@ -107,15 +105,15 @@ fun SearchSong(modifier: Modifier = Modifier, navController: NavController) {
 }
 @Composable
 fun SearchMusicCard(track: Track, navController: NavController, userId: String) {
-    val userDAO = UserDAO() // Initialize the UserDAO
-    var isInMySongs by remember { mutableStateOf(false) } // Track if the song is favorited
+    val userDAO = UserDAO()
+    var isInMySongs by remember { mutableStateOf(false) }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .clickable {
-                // Handle navigation to details if needed
+
             },
         colors = CardDefaults.cardColors(containerColor = Color(0xFF040723)),
     ) {
@@ -166,13 +164,12 @@ fun SearchMusicCard(track: Track, navController: NavController, userId: String) 
     }
 }
 
-// Extension function to convert Track to Song
 fun Track.toSong(): Song {
     return Song(
         title = this.name,
         artist = this.artist,
-        album = "", // Provide album if available
-        duration = "", // Provide duration if available
-        year = "" // Provide year if available
+        album = "",
+        duration = "",
+        year = ""
     )
 }

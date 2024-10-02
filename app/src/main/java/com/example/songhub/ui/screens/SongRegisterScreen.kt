@@ -54,10 +54,8 @@ fun SongRegisterScreen(
     navController: NavController,
     song: Song? = null
 ) {
-    // Get the ViewModel instance using Koin
     val viewModel = koinViewModel<SongViewModel>()
 
-    // State variables to hold form data
     var title by rememberSaveable { mutableStateOf(song?.title ?: "") }
     var artist by rememberSaveable { mutableStateOf(song?.artist ?: "") }
     var album by rememberSaveable { mutableStateOf(song?.album ?: "") }
@@ -91,7 +89,6 @@ fun SongRegisterScreen(
 
         Spacer(modifier = Modifier.height(36.dp))
 
-        // Form fields for the song attributes
         OutlinedTextField(
             value = title,
             onValueChange = { title = it },
@@ -238,7 +235,6 @@ fun SongRegisterScreen(
     }
 }
 
-// Helper function to save or update the song using the ViewModel
 private fun saveOrUpdateSong(
     viewModel: SongViewModel,
     existingSong: Song?,
@@ -246,17 +242,13 @@ private fun saveOrUpdateSong(
     navController: NavController
 ) {
     if (existingSong != null) {
-        // Update song if it already exists
         viewModel.updateSong(songToSave) { success ->
-            // Handle success or failure
             if (success) {
                 navController.navigate("main")
             }
         }
     } else {
-        // Add new song if it does not exist
         viewModel.addSong(songToSave) { success ->
-            // Handle success or failure
             if (success) {
                 navController.navigate("main")
             }

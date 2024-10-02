@@ -7,8 +7,6 @@ import com.example.songhub.repository.SongRepository
 import kotlinx.coroutines.launch
 
 class SongViewModel(val repository: SongRepository) : ViewModel() {
-
-    // Adds a new song to the database
     fun addSong(song: Song, onResult: (Boolean) -> Unit) {
         viewModelScope.launch {
             try {
@@ -21,12 +19,9 @@ class SongViewModel(val repository: SongRepository) : ViewModel() {
         }
     }
 
-    // Updates an existing song in the database
     fun updateSong(song: Song, onResult: (Boolean) -> Unit) {
         viewModelScope.launch {
             try {
-                // Assuming `insertSong` updates if the song already exists.
-                // If a separate update method is needed, add it to the repository.
                 repository.insertSong(song)
                 onResult(true)
             } catch (e: Exception) {
@@ -35,7 +30,6 @@ class SongViewModel(val repository: SongRepository) : ViewModel() {
         }
     }
 
-    // Retrieves a song by title from the database
     fun getSongByTitle(title: String, onResult: (Song?) -> Unit) {
         viewModelScope.launch {
             val song = repository.getSongByTitle(title)
@@ -43,7 +37,6 @@ class SongViewModel(val repository: SongRepository) : ViewModel() {
         }
     }
 
-    // Retrieves all songs from the database
     fun getAllSongs(onResult: (List<Song>) -> Unit) {
         viewModelScope.launch {
             val songs = repository.getAllSongs()
@@ -51,7 +44,6 @@ class SongViewModel(val repository: SongRepository) : ViewModel() {
         }
     }
 
-    // Deletes a song by title from the database
     fun deleteSongByTitle(title: String, onResult: (Boolean) -> Unit) {
         viewModelScope.launch {
             try {

@@ -60,14 +60,11 @@ fun SongInfoScreen(
 
 
     LaunchedEffect(id) {
-        Log.d("msg", "the coming url is $id")
         if(isUrl(id)) {
-            Log.d("msg", "im a url")
             songDAO.fetchTracksInfo(songs, "499a9407d353802f5f07166c0d8f35c2") { fetchedSongs ->
                 song = fetchedSongs[0]
             }
         } else {
-            Log.d("msg", "im not a url")
             songViewModel.getSongByTitle(id) { songFromViewModel ->
                 song = songFromViewModel
             }

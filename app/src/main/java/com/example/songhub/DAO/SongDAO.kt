@@ -37,7 +37,7 @@ class SongDAO {
                 val songs = mutableListOf<Song>()
                 for (document in result) {
                     val song = document.toObject(Song::class.java)
-                    song.title = document.id // Atribui o ID do documento ao objeto Song
+                    song.title = document.id
                     songs.add(song)
                 }
                 callback(songs)
@@ -142,13 +142,12 @@ class SongDAO {
                     val url = track.get("url").asString
 
                     var duration = track.get("duration").asString.toLong()
-                    val seconds = (duration / 1000) % 60 // Obtém os segundos
-                    val minutes = (duration / 1000) / 60 // Obtém os minutos
+                    val seconds = (duration / 1000) % 60
+                    val minutes = (duration / 1000) / 60
                     val formattedDuration = String.format("%d:%02d", minutes, seconds)
 
-                    // Verificando se a chave "wiki" existe
                     val publishedDate = track.getAsJsonObject("wiki")?.get("published")?.asString
-                    val year = publishedDate?.split(" ")?.get(2)?.trim(',') ?: "Desconhecido" // Remove a vírgula
+                    val year = publishedDate?.split(" ")?.get(2)?.trim(',') ?: "Desconhecido"
 
                     val imagesArray = track.getAsJsonObject("album").getAsJsonArray("image")
                     val imageUrl = if (imagesArray.size() > 3) {
@@ -157,7 +156,6 @@ class SongDAO {
                         null
                     }
 
-                    // Criando a instância da música com o ano
                     Song(
                         title = trackName,
                         artist = artistName,
@@ -165,7 +163,7 @@ class SongDAO {
                         url = url,
                         album = album,
                         duration = formattedDuration,
-                        year = year // Adicione o ano aqui
+                        year = year
                     )
                 }
             }
