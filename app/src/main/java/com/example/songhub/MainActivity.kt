@@ -75,7 +75,7 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                     composable("searchsong") {
-                        MainLayout(title = "Search a Song", navController = navController) {
+                        MainLayout(title = "Online Search", navController = navController) {
                             SearchSong(modifier = Modifier, navController = navController)
                         }
                     }

@@ -100,22 +100,43 @@ fun ProfileScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(28.dp))
-            Card(
-                modifier = Modifier
-                    .size(200.dp)
-                    .padding(bottom = 4.dp),
-                shape = RoundedCornerShape(100),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFd9d9d9)),
-            ) {
-                Image(
-                    painter = rememberAsyncImagePainter(user.imageUrl),
-                    contentDescription = "Profile Picture",
-                    contentScale = ContentScale.Crop,
+
+            if(user.imageUrl != "") {
+                Card(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .clip(RoundedCornerShape(5.dp))
-                )
+                        .size(200.dp)
+                        .padding(bottom = 4.dp),
+                    shape = RoundedCornerShape(100),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFd9d9d9)),
+                ) {
+                    Image(
+                        painter = rememberAsyncImagePainter(user.imageUrl),
+                        contentDescription = "Profile Picture",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(5.dp))
+                    )
+                }
+            } else {
+                Card(
+                    modifier = Modifier
+                        .size(200.dp)
+                        .padding(bottom = 4.dp),
+                    shape = RoundedCornerShape(100),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFd9d9d9)),
+                ) {
+                    Image(
+                        painter= painterResource(R.drawable.profile),
+                        contentDescription = "Profile Picture",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(5.dp))
+                    )
+                }
             }
+
 
             Spacer(modifier = Modifier.height(8.dp))
 

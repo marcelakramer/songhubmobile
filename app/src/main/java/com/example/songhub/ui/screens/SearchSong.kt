@@ -23,13 +23,17 @@ import com.example.songhub.model.Track
 import com.example.songhub.network.RetrofitInstance
 import kotlinx.coroutines.launch
 import android.util.Log
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.font.FontFamily
 import com.example.songhub.DAO.UserDAO
 import com.example.songhub.model.Song
 import com.example.songhub.model.UserSession
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchSong(modifier: Modifier = Modifier, navController: NavController) {
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
@@ -40,57 +44,59 @@ fun SearchSong(modifier: Modifier = Modifier, navController: NavController) {
 
     Column(
         modifier = modifier
+            .padding(25.dp, 15.dp)
             .fillMaxSize()
-            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp)
-                .border(
-                    width = 1.dp,
-                    color = Color.Gray,
-                    shape = RoundedCornerShape(8.dp)
-                )
-                .background(color = Color(0xFF1F1B2E), shape = RoundedCornerShape(8.dp))
-                .padding(horizontal = 16.dp, vertical = 12.dp)
-        ) {
-            if (searchQuery.text.isEmpty()) {
-                Text(
-                    text = "Search for songs...",
-                    color = Color.LightGray,
-                    fontSize = 16.sp
-                )
-            }
-            BasicTextField(
-                value = searchQuery,
-                onValueChange = { query ->
-                    searchQuery = query
-                    if (query.text.isNotEmpty()) {
-                        coroutineScope.launch {
-                            try {
-                                val response = RetrofitInstance.api.searchTracks(
-                                    method = "track.search",
-                                    trackName = query.text,
-                                    apiKey = "499a9407d353802f5f07166c0d8f35c2",
-                                    format = "json"
-                                )
+        Text(
+            text = "Search a Song",
+            color = Color.White,
+            fontSize = 35.sp,
+            fontFamily = FontFamily.SansSerif,
+            fontWeight = FontWeight.W700,
+            modifier = Modifier.padding(vertical = 8.dp)
+        )
 
-                                items = response.results.trackmatches.track
-                            } catch (e: Exception) {
-                                Log.e("SearchSong", "Error fetching tracks: $e")
-                            }
+        Spacer(modifier = Modifier.height(36.dp))
+
+        OutlinedTextField(
+            value = searchQuery.text,
+            onValueChange = { query ->
+                searchQuery = TextFieldValue(query)
+                if (query.isNotEmpty()) {
+                    coroutineScope.launch {
+                        try {
+                            val response = RetrofitInstance.api.searchTracks(
+                                method = "track.search",
+                                trackName = query,
+                                apiKey = "499a9407d353802f5f07166c0d8f35c2",
+                                format = "json"
+                            )
+
+                            items = response.results.trackmatches.track
+                        } catch (e: Exception) {
+                            Log.e("SearchSong", "Error fetching tracks: $e")
                         }
                     }
-                },
-                textStyle = TextStyle(
-                    color = Color.White,
-                    fontSize = 16.sp
-                ),
-                cursorBrush = SolidColor(Color.White),
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
+                }
+            },
+            shape = MaterialTheme.shapes.medium,
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                focusedBorderColor = Color.Transparent,
+                unfocusedBorderColor = Color.Transparent,
+                containerColor = Color.White,
+                focusedTextColor = Color.Black,
+                unfocusedTextColor = Color.Black,
+            ),
+            placeholder = { Text("Title, artist, album...", color = Color(0xFF5A5A5A)) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(55.dp)
+        )
+
+        Spacer(modifier = Modifier.height(36.dp))
 
         LazyColumn(
             modifier = Modifier
@@ -103,6 +109,7 @@ fun SearchSong(modifier: Modifier = Modifier, navController: NavController) {
         }
     }
 }
+
 @Composable
 fun SearchMusicCard(track: Track, navController: NavController, userId: String) {
     val userDAO = UserDAO()
@@ -156,7 +163,7 @@ fun SearchMusicCard(track: Track, navController: NavController, userId: String) 
                 Icon(
                     painter = painterResource(if (isInMySongs) R.drawable.add_icon else R.drawable.add_icon),
                     contentDescription = "Add song",
-                    tint = Color(0xFF9B3EFF),
+                    tint = Color(0xFF5EAF76),
                     modifier = Modifier.size(22.dp)
                 )
             }
@@ -170,6 +177,6 @@ fun Track.toSong(): Song {
         artist = this.artist,
         album = "",
         duration = "",
-        year = ""
+        year=""
     )
 }
