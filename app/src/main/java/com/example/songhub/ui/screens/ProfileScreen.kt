@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.provider.CalendarContract
 import android.provider.MediaStore
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -27,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -44,6 +46,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -105,8 +108,9 @@ fun ProfileScreen(
                 colors = CardDefaults.cardColors(containerColor = Color(0xFFd9d9d9)),
             ) {
                 Image(
-                    painter = rememberImagePainter(user.imageUrl),
+                    painter = rememberAsyncImagePainter(user.imageUrl),
                     contentDescription = "Profile Picture",
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxSize()
                         .clip(RoundedCornerShape(5.dp))
@@ -259,36 +263,62 @@ fun ProfileScreen(
 
                 OutlinedButton(
                     onClick = {
-
-                        imageBitmap.value?.let { bitmap ->
-                            val imageUri = getImageUri(context, bitmap)
-                            if (imageUri != null) {
-                                userDAO.uploadImage(imageUri, username.toString()) { url ->
-                                    if (url != null) {
-                                        userDAO.updateUser(
-                                            oldEmail = user.email,
-                                            newUsername = username.value,
-                                            newPassword = password.value,
-                                            newEmail = email.value,
-                                            newImage = url
-                                        ) { success, message ->
-                                            if (success) {
-                                                val newUser = User(
-                                                    email = email.value,
-                                                    username = username.value,
-                                                    password = password.value,
-                                                    imageUrl = url
-                                                )
-                                                UserSession.loggedInUser = newUser
-                                                navController.navigate("main")
-                                            } else {
-                                                navController.navigate("main")
+                        Log.d("testing", "${imageBitmap.value}")
+                        if (imageBitmap.value != null) {
+                            imageBitmap.value?.let { bitmap ->
+                                val imageUri = getImageUri(context, bitmap)
+                                if (imageUri != null) {
+                                    userDAO.uploadImage(imageUri, username.toString()) { url ->
+                                        if (url != null) {
+                                            userDAO.updateUser(
+                                                oldEmail = user.email,
+                                                newUsername = username.value,
+                                                newPassword = password.value,
+                                                newEmail = email.value,
+                                                newImage = url
+                                            ) { success, message ->
+                                                if (success) {
+                                                    val newUser = User(
+                                                        email = email.value,
+                                                        username = username.value,
+                                                        password = password.value,
+                                                        imageUrl = url
+                                                    )
+                                                    UserSession.loggedInUser = newUser
+                                                    navController.navigate("profile")
+                                                } else {
+                                                    navController.navigate("main")
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
+                        } else {
+                            user.imageUrl?.let {
+                                userDAO.updateUser(
+                                    oldEmail = user.email,
+                                    newUsername = username.value,
+                                    newPassword = password.value,
+                                    newEmail = email.value,
+                                    newImage = it
+                                ) { success, message ->
+                                    if (success) {
+                                        val newUser = User(
+                                            email = email.value,
+                                            username = username.value,
+                                            password = password.value,
+                                            imageUrl = it
+                                        )
+                                        UserSession.loggedInUser = newUser
+                                        navController.navigate("profile")
+                                    } else {
+                                        navController.navigate("main")
+                                    }
+                                }
+                            }
                         }
+
 
 
                     },
@@ -328,7 +358,7 @@ fun ProfileScreen(
 private fun getImageUri(context: Context, bitmap: Bitmap): Uri? {
     val bytes = ByteArrayOutputStream()
     bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes)
-    val path = MediaStore.Images.Media.insertImage(context.contentResolver, bitmap, "Title", null)
+    val path = MediaStore.Images.Media.insertImage(context.contentResolver, bitmap, Calendar.getInstance().time.toString(), null)
     return Uri.parse(path)
 }
 
