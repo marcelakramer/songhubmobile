@@ -244,7 +244,7 @@ fun ProfileScreen(
                     border = BorderStroke(1.dp, Color(0xFFEC5766)),
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier
-                        .width(130.dp)
+                        .width(140.dp)
                         .height(45.dp)
                 ) {
                     Icon(
@@ -252,8 +252,8 @@ fun ProfileScreen(
                         contentDescription = "Cancel Icon",
                         tint = Color(0xFFEC5766),
                         modifier = Modifier
-                            .size(32.dp)
-                            .padding(end = 9.dp)
+                            .size(24.dp)
+                            .padding(end = 4.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(text = "Cancel", color = Color(0xFFEC5766))
