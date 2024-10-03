@@ -229,7 +229,7 @@ fun SongInfoScreen(
                 border = BorderStroke(1.dp, Color(0xFF9B3EFF)),
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier
-                    .width(130.dp)
+                    .width(140.dp)
                     .height(45.dp)
             ) {
                 Icon(
@@ -237,8 +237,8 @@ fun SongInfoScreen(
                     contentDescription = "Favorite Icon",
                     tint = colorF,
                     modifier = Modifier
-                        .size(32.dp)
-                        .padding(end = 9.dp)
+                        .size(24.dp)
+                        .padding(end = 4.dp)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(text = "Favorite", color = colorF)
