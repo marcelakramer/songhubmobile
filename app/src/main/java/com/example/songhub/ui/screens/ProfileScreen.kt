@@ -126,11 +126,12 @@ fun ProfileScreen(
                     shape = RoundedCornerShape(100),
                     colors = CardDefaults.cardColors(containerColor = Color(0xFFd9d9d9)),
                 ) {
-                    Image(
-                        painter= painterResource(R.drawable.profile),
+                    Icon(
+                        painter = painterResource(R.drawable.camera_off_outline),
                         contentDescription = "Profile Picture",
-                        contentScale = ContentScale.Crop,
+                        tint = Color(0xFFC1C1C1),
                         modifier = Modifier
+                            .padding(20.dp)
                             .fillMaxSize()
                             .clip(RoundedCornerShape(5.dp))
                     )
