@@ -1,5 +1,6 @@
 package com.example.songhub
 
+import SearchSong
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -10,6 +11,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.songhub.model.Song
 import com.example.songhub.ui.layout.MainLayout
+import com.example.songhub.ui.screens.FavoritesScreen
 import com.example.songhub.ui.screens.LoginScreen
 import com.example.songhub.ui.screens.MainScreen
 import com.example.songhub.ui.screens.ProfileScreen
@@ -17,12 +19,16 @@ import com.example.songhub.ui.screens.RegisterScreen
 import com.example.songhub.ui.screens.SongInfoScreen
 import com.example.songhub.ui.screens.SongRegisterScreen
 import com.example.songhub.ui.theme.SonghubTheme
+import com.example.songhub.ui.viewmodel.SongViewModel
 import com.google.firebase.FirebaseApp
 import com.google.gson.Gson
+import org.koin.androidx.compose.koinViewModel
+import org.koin.core.context.startKoin
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         FirebaseApp.initializeApp(this)
         enableEdgeToEdge()
         setContent {
@@ -58,6 +64,7 @@ class MainActivity : ComponentActivity() {
                         MainLayout(title = "New Song", navController = navController) {
                             val songJson = backStackEntry.arguments?.getString("songJson") ?: ""
                             val song = Gson().fromJson(songJson, Song::class.java)
+                            val viewModel = koinViewModel<SongViewModel>()
                             SongRegisterScreen(modifier = Modifier, navController = navController, song = song ?: null)
                         }
                     }
@@ -65,6 +72,16 @@ class MainActivity : ComponentActivity() {
                         val id = backStackEntry.arguments?.getString("id") ?: ""
                         MainLayout(title = "Song Info", navController = navController) {
                             SongInfoScreen(id = id, navController = navController)
+                        }
+                    }
+                    composable("searchsong") {
+                        MainLayout(title = "Online Search", navController = navController) {
+                            SearchSong(modifier = Modifier, navController = navController)
+                        }
+                    }
+                    composable("favorites") {
+                        MainLayout(title = "My Favorites", navController = navController) {
+                            FavoritesScreen(modifier = Modifier, navController = navController)
                         }
                     }
 

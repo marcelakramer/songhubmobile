@@ -1,9 +1,11 @@
 package com.example.songhub.DAO
 
+import android.net.Uri
 import android.util.Log
 import com.example.songhub.model.User
 import com.example.songhub.model.UserSession
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 
 class UserDAO {
 
@@ -21,7 +23,8 @@ class UserDAO {
                         val user = User(
                             username = document.getString("username")!!,
                             password = document.getString("password")!!,
-                            email = document.getString("email")!!
+                            email = document.getString("email")!!,
+                            imageUrl = document.getString("imageUrl") ?: ""
                         )
                         UserSession.loggedInUser = user
                         onResult(true)
@@ -141,7 +144,7 @@ class UserDAO {
         }
     }
 
-    fun updateUser(oldEmail: String, newUsername: String, newPassword: String, newEmail: String, callback: (Boolean, String) -> Unit) {
+    fun updateUser(oldEmail: String, newUsername: String, newPassword: String, newEmail: String, newImage: String = null.toString(), callback: (Boolean, String) -> Unit) {
         try {
             db.collection("users")
                 .whereEqualTo("email", oldEmail)
@@ -156,7 +159,8 @@ class UserDAO {
                         userRef.update(mapOf(
                             "username" to newUsername,
                             "password" to newPassword,
-                            "email" to newEmail
+                            "email" to newEmail,
+                            "imageUrl" to newImage
                         )).addOnSuccessListener {
                             callback(true, "User updated successfully")
                         }.addOnFailureListener { exception ->
@@ -178,4 +182,267 @@ class UserDAO {
     fun logout() {
         UserSession.loggedInUser = null
     }
+
+    fun addToMySongs(userId: String, trackUrl: String, callback: (Boolean) -> Unit) {
+        val db = FirebaseFirestore.getInstance()
+
+        db.collection("users")
+            .whereEqualTo("username", userId)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                if (querySnapshot.isEmpty) {
+                    Log.e("Firestore", "No user found with username: $userId")
+                    callback(false)
+                    return@addOnSuccessListener
+                }
+
+                val userDoc = querySnapshot.documents.firstOrNull() ?: return@addOnSuccessListener
+                val userId = userDoc.id
+
+                val mySongs = userDoc.get("mysongs") as? MutableList<String> ?: mutableListOf()
+
+                if (trackUrl !in mySongs) {
+                    mySongs.add(trackUrl)
+
+                    db.collection("users").document(userId)
+                        .update("mysongs", mySongs)
+                        .addOnSuccessListener {
+                            callback(true)
+                        }
+                        .addOnFailureListener { e ->
+                            callback(false)
+                        }
+                } else {
+                    callback(true)
+                }
+            }
+            .addOnFailureListener { e ->
+                callback(false)
+            }
+    }
+
+    fun removeFromMySongs(userId: String, trackUrl: String, callback: (Boolean) -> Unit) {
+        db.collection("users")
+            .whereEqualTo("username", userId)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                if (querySnapshot.isEmpty) {
+                    Log.e("Firestore", "No user found with username: $userId")
+                    callback(false)
+                    return@addOnSuccessListener
+                }
+
+                val userDoc = querySnapshot.documents.firstOrNull() ?: return@addOnSuccessListener
+                val userId = userDoc.id
+
+                val favorites = userDoc.get("mysongs") as? MutableList<String> ?: mutableListOf()
+
+                if (trackUrl in favorites) {
+                    favorites.remove(trackUrl)
+
+                    db.collection("users").document(userId)
+                        .update("mysongs", favorites)
+                        .addOnSuccessListener {
+                            Log.d("Firestore", "Song removed from my songs successfully")
+                            callback(true)
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("Firestore", "Error removing song from my songs", e)
+                            callback(false)
+                        }
+                } else {
+                    Log.d("Firestore", "Song URL is not in my songs")
+                    callback(true)
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firestore", "Error querying user by username", e)
+                callback(false)
+            }
+    }
+
+    val storage = FirebaseStorage.getInstance().reference
+    fun uploadImage(imageUri: Uri, username: String, callback: (String?) -> Unit) {
+        val imageRef = storage.child("profile_pictures/${username}.jpg")
+
+        imageRef.putFile(imageUri)
+            .addOnSuccessListener { taskSnapshot ->
+                imageRef.downloadUrl.addOnSuccessListener { uri ->
+                    callback(uri.toString())
+                }
+            }
+            .addOnFailureListener {
+                callback(null)
+            }
+    }
+
+    fun getMySongs(userId: String, callback: (List<String>?) -> Unit) {
+        db.collection("users")
+            .whereEqualTo("username", userId)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                if (querySnapshot.isEmpty) {
+                    Log.e("Firestore", "No user found with username: $userId")
+                    callback(null)
+                    return@addOnSuccessListener
+                }
+
+                val userDoc = querySnapshot.documents.firstOrNull() ?: return@addOnSuccessListener
+
+                val mySongs = userDoc.get("mysongs") as? List<String> ?: emptyList()
+
+                callback(mySongs)
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firestore", "Error querying user by username", e)
+                callback(null)
+            }
+    }
+
+    fun addToFavoriteSongs(userId: String, trackUrl: String, callback: (Boolean) -> Unit) {
+        val db = FirebaseFirestore.getInstance()
+
+        db.collection("users")
+            .whereEqualTo("username", userId)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                if (querySnapshot.isEmpty) {
+                    Log.e("Firestore", "No user found with username: $userId")
+                    callback(false)
+                    return@addOnSuccessListener
+                }
+
+                val userDoc = querySnapshot.documents.firstOrNull() ?: return@addOnSuccessListener
+                val userId = userDoc.id
+
+                val favorites = userDoc.get("favorites") as? MutableList<String> ?: mutableListOf()
+
+                if (trackUrl !in favorites) {
+                    favorites.add(trackUrl)
+
+                    db.collection("users").document(userId)
+                        .update("favorites", favorites)
+                        .addOnSuccessListener {
+                            Log.d("Firestore", "Song added to favorites successfully")
+                            callback(true)
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("Firestore", "Error adding song to favorites", e)
+                            callback(false)
+                        }
+                } else {
+                    Log.d("Firestore", "Song URL is already in favorites")
+                    callback(true)
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firestore", "Error querying user by username", e)
+                callback(false)
+            }
+    }
+
+    fun getMyFavoriteSongs(userId: String, callback: (List<String>?) -> Unit) {
+        db.collection("users")
+            .whereEqualTo("username", userId)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                if (querySnapshot.isEmpty) {
+                    Log.e("Firestore", "No user found with username: $userId")
+                    callback(null)
+                    return@addOnSuccessListener
+                }
+
+                val userDoc = querySnapshot.documents.firstOrNull() ?: return@addOnSuccessListener
+
+                val mySongs = userDoc.get("favorites") as? List<String> ?: emptyList()
+
+                callback(mySongs)
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firestore", "Error querying user by username", e)
+                callback(null)
+            }
+    }
+
+
+
+    fun removeFromFavoriteSongs(userId: String, trackUrl: String, callback: (Boolean) -> Unit) {
+        db.collection("users")
+            .whereEqualTo("username", userId)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                if (querySnapshot.isEmpty) {
+                    Log.e("Firestore", "No user found with username: $userId")
+                    callback(false)
+                    return@addOnSuccessListener
+                }
+
+                val userDoc = querySnapshot.documents.firstOrNull() ?: return@addOnSuccessListener
+                val userId = userDoc.id
+
+                val favorites = userDoc.get("favorites") as? MutableList<String> ?: mutableListOf()
+
+                if (trackUrl in favorites) {
+                    favorites.remove(trackUrl)
+
+                    db.collection("users").document(userId)
+                        .update("favorites", favorites)
+                        .addOnSuccessListener {
+                            Log.d("Firestore", "Song removed from favorites successfully")
+                            callback(true)
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("Firestore", "Error removing song from favorites", e)
+                            callback(false)
+                        }
+                } else {
+                    Log.d("Firestore", "Song URL is not in favorites")
+                    callback(true)
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firestore", "Error querying user by username", e)
+                callback(false)
+            }
+    }
+
+    fun isSongFavorited(userId: String, trackUrl: String, callback: (Boolean) -> Unit) {
+        db.collection("users")
+            .whereEqualTo("username", userId)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                if (querySnapshot.isEmpty) {
+                    Log.e("Firestore", "No user found with username: $userId")
+                    callback(false)
+                    return@addOnSuccessListener
+                }
+
+                val userDoc = querySnapshot.documents.firstOrNull()
+                if (userDoc == null) {
+                    Log.e("Firestore", "No document found for user: $userId")
+                    callback(false)
+                    return@addOnSuccessListener
+                }
+
+                val favorites = userDoc.get("favorites") as? List<String>
+                if (favorites == null) {
+                    Log.e("Firestore", "Favorites field is missing or is not a list for user: $userId")
+                    callback(false)
+                    return@addOnSuccessListener
+                }
+
+                if (trackUrl in favorites) {
+                    callback(true)
+                } else {
+                    callback(false)
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firestore", "Error querying user by username", e)
+                callback(false)
+            }
+    }
+
+
+
 }

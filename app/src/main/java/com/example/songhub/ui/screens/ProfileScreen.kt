@@ -1,7 +1,19 @@
 package com.example.songhub.ui.screens
 
+import android.Manifest
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
+import android.provider.CalendarContract
+import android.provider.MediaStore
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -13,16 +25,28 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.rememberAsyncImagePainter
+import coil.compose.rememberImagePainter
 import com.example.songhub.R
 import com.example.songhub.model.User
 import com.example.songhub.DAO.UserDAO
 import com.example.songhub.model.UserSession
+import com.google.firebase.crashlytics.buildtools.reloc.org.apache.commons.io.output.ByteArrayOutputStream
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,8 +54,36 @@ fun ProfileScreen(
     modifier: Modifier = Modifier,
     navController: NavController,
 ) {
+    val context = LocalContext.current
+
+    val cameraPermissionGranted = remember { mutableStateOf(false) }
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        cameraPermissionGranted.value = isGranted
+    }
+
     val userDAO = UserDAO()
     val user = UserSession.loggedInUser
+    val imageBitmap = remember { mutableStateOf<Bitmap?>(null) }
+
+    var showDialog by remember { mutableStateOf(false) }
+
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            loadBitmapFromUri(context, it) { bitmap ->
+                imageBitmap.value = bitmap
+            }
+        }
+    }
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicturePreview()
+    ) { bitmap: Bitmap? ->
+        imageBitmap.value = bitmap
+    }
 
     if (user != null) {
         val username = remember { mutableStateOf(user.username) }
@@ -48,28 +100,53 @@ fun ProfileScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(28.dp))
-            Card(
-                modifier = Modifier
-                    .size(200.dp)
-                    .padding(bottom = 4.dp),
-                shape = RoundedCornerShape(100),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFd9d9d9)),
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.camera_off_outline),
-                    contentDescription = "Profile Picture",
+
+            if(user.imageUrl != "") {
+                Card(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(30.dp),
-                    tint = Color(0xFFc2c2c2)
-                )
+                        .size(200.dp)
+                        .padding(bottom = 4.dp),
+                    shape = RoundedCornerShape(100),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFd9d9d9)),
+                ) {
+                    Image(
+                        painter = rememberAsyncImagePainter(user.imageUrl),
+                        contentDescription = "Profile Picture",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(5.dp))
+                    )
+                }
+            } else {
+                Card(
+                    modifier = Modifier
+                        .size(200.dp)
+                        .padding(bottom = 4.dp),
+                    shape = RoundedCornerShape(100),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFd9d9d9)),
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.camera_off_outline),
+                        contentDescription = "Profile Picture",
+                        tint = Color(0xFFC1C1C1),
+                        modifier = Modifier
+                            .padding(20.dp)
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(5.dp))
+                    )
+                }
             }
+
 
             Spacer(modifier = Modifier.height(8.dp))
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.clickable {
+                    showDialog = true
+                }
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_upload),
@@ -82,6 +159,34 @@ fun ProfileScreen(
                     text = "Upload photo",
                     color = Color.White,
                     fontSize = 16.sp,
+                )
+            }
+
+            if (showDialog) {
+                AlertDialog(
+                    onDismissRequest = { showDialog = false },
+                    title = { Text("Selecionar Imagem") },
+                    text = { Text("Escolha uma opção:") },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            galleryLauncher.launch("image/*")
+                            showDialog = false
+                        }) {
+                            Text("Galeria")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = {
+                            if (cameraPermissionGranted.value) {
+                                cameraLauncher.launch(null)
+                            } else {
+                                permissionLauncher.launch(Manifest.permission.CAMERA)
+                            }
+                            showDialog = false
+                        }) {
+                            Text("Câmera")
+                        }
+                    }
                 )
             }
 
@@ -149,8 +254,7 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
             ) {
                 OutlinedButton(
@@ -162,7 +266,7 @@ fun ProfileScreen(
                     border = BorderStroke(1.dp, Color(0xFFEC5766)),
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier
-                        .width(130.dp)
+                        .width(140.dp)
                         .height(45.dp)
                 ) {
                     Icon(
@@ -170,8 +274,8 @@ fun ProfileScreen(
                         contentDescription = "Cancel Icon",
                         tint = Color(0xFFEC5766),
                         modifier = Modifier
-                            .size(32.dp)
-                            .padding(end = 9.dp)
+                            .size(24.dp)
+                            .padding(end = 4.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(text = "Cancel", color = Color(0xFFEC5766))
@@ -181,30 +285,70 @@ fun ProfileScreen(
 
                 OutlinedButton(
                     onClick = {
-                        userDAO.updateUser(
-                            oldEmail = user.email,
-                            newUsername = username.value,
-                            newPassword = password.value,
-                            newEmail = email.value
-                        ) { success, message ->
-                            if (success) {
-                                val newUser = User(
-                                    email = email.value,
-                                    username = username.value,
-                                    password = password.value
-                                )
-                                UserSession.loggedInUser = newUser
-                                navController.navigate("main")
-                            } else {
-                                /* colocar print pra dizer que deu erro */
+                        Log.d("testing", "${imageBitmap.value}")
+                        if (imageBitmap.value != null) {
+                            imageBitmap.value?.let { bitmap ->
+                                val imageUri = getImageUri(context, bitmap)
+                                if (imageUri != null) {
+                                    userDAO.uploadImage(imageUri, username.toString()) { url ->
+                                        if (url != null) {
+                                            userDAO.updateUser(
+                                                oldEmail = user.email,
+                                                newUsername = username.value,
+                                                newPassword = password.value,
+                                                newEmail = email.value,
+                                                newImage = url
+                                            ) { success, message ->
+                                                if (success) {
+                                                    val newUser = User(
+                                                        email = email.value,
+                                                        username = username.value,
+                                                        password = password.value,
+                                                        imageUrl = url
+                                                    )
+                                                    UserSession.loggedInUser = newUser
+                                                    navController.navigate("profile")
+                                                } else {
+                                                    navController.navigate("main")
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            user.imageUrl?.let {
+                                userDAO.updateUser(
+                                    oldEmail = user.email,
+                                    newUsername = username.value,
+                                    newPassword = password.value,
+                                    newEmail = email.value,
+                                    newImage = it
+                                ) { success, message ->
+                                    if (success) {
+                                        val newUser = User(
+                                            email = email.value,
+                                            username = username.value,
+                                            password = password.value,
+                                            imageUrl = it
+                                        )
+                                        UserSession.loggedInUser = newUser
+                                        navController.navigate("profile")
+                                    } else {
+                                        navController.navigate("main")
+                                    }
+                                }
                             }
                         }
+
+
+
                     },
                     colors = ButtonDefaults.outlinedButtonColors(
                         containerColor = Color.Transparent,
-                        contentColor = Color(0xFF16A085)
+                        contentColor = Color(0xFF4CAF50)
                     ),
-                    border = BorderStroke(1.dp, Color(0xFF16A085)),
+                    border = BorderStroke(1.dp, Color(0xFF4CAF50)),
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier
                         .width(130.dp)
@@ -213,17 +357,15 @@ fun ProfileScreen(
                     Icon(
                         imageVector = Icons.Default.Check,
                         contentDescription = "Save Icon",
-                        tint = Color(0xFF16A085),
+                        tint = Color(0xFF4CAF50),
                         modifier = Modifier
                             .size(32.dp)
                             .padding(end = 9.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "Save", color = Color(0xFF16A085))
+                    Text(text = "Save", color = Color(0xFF4CAF50))
                 }
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
         }
     } else {
         Box(
@@ -231,6 +373,24 @@ fun ProfileScreen(
             contentAlignment = Alignment.Center
         ) {
             Text(text = "No user logged in", fontSize = 36.sp, color = Color.Red)
+        }
+    }
+}
+
+private fun getImageUri(context: Context, bitmap: Bitmap): Uri? {
+    val bytes = ByteArrayOutputStream()
+    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes)
+    val path = MediaStore.Images.Media.insertImage(context.contentResolver, bitmap, Calendar.getInstance().time.toString(), null)
+    return Uri.parse(path)
+}
+
+
+private fun loadBitmapFromUri(context: Context, uri: Uri, onBitmapLoaded: (Bitmap?) -> Unit) {
+    CoroutineScope(Dispatchers.IO).launch {
+        val inputStream = context.contentResolver.openInputStream(uri)
+        val bitmap = BitmapFactory.decodeStream(inputStream)
+        withContext(Dispatchers.Main) {
+            onBitmapLoaded(bitmap)
         }
     }
 }

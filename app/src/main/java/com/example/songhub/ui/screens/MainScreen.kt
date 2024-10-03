@@ -1,5 +1,7 @@
 package com.example.songhub.ui.screens
 
+import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -9,10 +11,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,32 +27,52 @@ import androidx.compose.ui.draw.clip
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.example.songhub.DAO.SongDAO
+import com.example.songhub.DAO.UserDAO
 import com.example.songhub.R
 import com.example.songhub.model.Song
+import com.example.songhub.model.User
+import com.example.songhub.model.UserSession
+import com.example.songhub.ui.viewmodel.SongViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(modifier: Modifier = Modifier, navController: NavController) {
-    var items by remember { mutableStateOf<List<Song>>(emptyList()) }
-    val songDAO = SongDAO()
+    val coroutineScope = rememberCoroutineScope()
+    var user = UserSession.loggedInUser
+    var userDAO = UserDAO()
+    var songDAO = SongDAO()
+    var songs = remember { mutableStateOf<List<Song>>(emptyList()) }
+
+    val songViewModel = koinViewModel<SongViewModel>()
 
     LaunchedEffect(Unit) {
-        songDAO.findAll { fetchedSongs ->
-            items = fetchedSongs
+        if (user != null) {
+            songViewModel.getAllSongs { viewModelSongs ->
+                userDAO.getMySongs(user.username) { mySongs ->
+                    if (mySongs != null && mySongs.isNotEmpty()) {
+                        songDAO.fetchTracksInfo(mySongs, "499a9407d353802f5f07166c0d8f35c2") { fetchedSongs ->
+                            songs.value = viewModelSongs + fetchedSongs
+                        }
+                    } else {
+                        println("No songs found for user: ${user.username}")
+                        songs.value = viewModelSongs
+                    }
+                }
+            }
         }
     }
 
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-    ) {
+    Box(modifier = modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.TopCenter)
         ) {
-            items(items) { item ->
-                MusicCard(item, navController)
+            items(songs.value) { item ->
+                if (user != null) {
+                    MusicCard(item, navController, user)
+                }
             }
         }
 
@@ -73,12 +94,25 @@ fun MainScreen(modifier: Modifier = Modifier, navController: NavController) {
 }
 
 @Composable
-fun MusicCard(item: Song, navController: NavController) {
+fun MusicCard(item: Song, navController: NavController, user: User) {
+    var userDAO = UserDAO()
+    val encodedUrl = Uri.encode(item.id)
+
+    val route = if (item.isLocal) item.id else encodedUrl
+
+    var isFavorited = remember { mutableStateOf(false) }
+
+    LaunchedEffect(item.id) {
+        userDAO.isSongFavorited(user.username, item.id) { isFavored ->
+            isFavorited.value = isFavored
+        }
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
-            .clickable { navController.navigate("songinfo/${item.id}") },
+            .clickable { navController.navigate("songinfo/$route") },
         colors = CardDefaults.cardColors(containerColor = Color(0xFF040723)),
     ) {
         Row(
@@ -145,19 +179,47 @@ fun MusicCard(item: Song, navController: NavController) {
                 )
             }
             Spacer(modifier = Modifier.width(8.dp))
-            IconButton(
-                onClick = { /* TODO */ },
-                modifier = Modifier
-                    .size(40.dp)
-                    .padding(0.dp)
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.heart_outline),
-                    contentDescription = "Favorite",
-                    tint = Color(0xFF9B3EFF),
-                    modifier = Modifier.size(22.dp)
-                )
+
+            if(!item.isLocal) {
+                IconButton(
+                    onClick = {
+                        user?.let { currentUser ->
+                            val trackUrl = item.id
+                            if (isFavorited.value) {
+                                userDAO.removeFromFavoriteSongs(currentUser.username, trackUrl) { success ->
+                                    if (success) {
+                                        isFavorited.value = false
+                                        println("Song removed from favorites")
+                                    }
+                                }
+                            } else {
+                                userDAO.addToFavoriteSongs(currentUser.username, trackUrl) { success ->
+                                    if (success) {
+                                        isFavorited.value = true
+                                        println("Song added to favorites")
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    modifier = Modifier
+                        .size(40.dp)
+                        .padding(0.dp)
+                ) {
+                    val iconResource = if (isFavorited.value) {
+                        R.drawable.heart_svgrepo_com
+                    } else {
+                        R.drawable.heart_outline
+                    }
+                    Icon(
+                        painter = painterResource(iconResource),
+                        contentDescription = "Favorite",
+                        tint = Color(0xFF9B3EFF),
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
             }
+
         }
     }
 }

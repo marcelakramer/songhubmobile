@@ -42,6 +42,9 @@ import androidx.navigation.NavController
 import com.example.songhub.DAO.SongDAO
 import com.example.songhub.R
 import com.example.songhub.model.Song
+import com.example.songhub.ui.viewmodel.SongViewModel
+import org.koin.androidx.compose.koinViewModel
+import java.util.UUID
 
 val songDAO:SongDAO = SongDAO()
 
@@ -52,17 +55,14 @@ fun SongRegisterScreen(
     navController: NavController,
     song: Song? = null
 ) {
+    val viewModel = koinViewModel<SongViewModel>()
+
     var title by rememberSaveable { mutableStateOf(song?.title ?: "") }
     var artist by rememberSaveable { mutableStateOf(song?.artist ?: "") }
     var album by rememberSaveable { mutableStateOf(song?.album ?: "") }
     var duration by rememberSaveable { mutableStateOf(song?.duration ?: "") }
     var year by rememberSaveable { mutableStateOf(song?.year ?: "") }
-    var selectedImageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
-    val context = LocalContext.current
 
-    val imagePickerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        selectedImageUri = uri
-    }
 
     val areFieldsFilled = title.isNotEmpty() && artist.isNotEmpty() && album.isNotEmpty() &&
             duration.isNotEmpty() && year.isNotEmpty()
@@ -180,69 +180,30 @@ fun SongRegisterScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-            Icon(
-                painter = painterResource(R.drawable.upload),
-                contentDescription = "Upload cover",
-                tint = Color.White,
-                modifier = Modifier
-                    .size(20.dp)
-                    .align(Alignment.CenterVertically)
-            )
-            Spacer(modifier = Modifier.size(8.dp))
-            Text(
-                modifier = Modifier.clickable { imagePickerLauncher.launch("image/*") },
-                text = "Upload cover",
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color(0xFFFFFFFF),
-                fontWeight = FontWeight.W400,
-            )
-        }
-
         Spacer(modifier = Modifier.height(30.dp))
 
         Button(
             onClick = {
                 if (areFieldsFilled) {
                     val songToSave = song?.copy(
+                        id= UUID.randomUUID().toString(),
                         title = title,
                         artist = artist,
                         album = album,
                         duration = duration,
-                        year = year
+                        year = year,
+                        isLocal = true
                     ) ?: Song(
+                        id= UUID.randomUUID().toString(),
                         title = title,
                         artist = artist,
                         album = album,
                         duration = duration,
-                        year = year
+                        year = year,
+                        isLocal = true
                     )
 
-                    if (selectedImageUri != null) {
-                        songDAO.uploadImage(selectedImageUri!!) { url ->
-                            val songWithImage = songToSave.copy(imageUrl = url)
-                            if (song != null) {
-                                songDAO.update(songWithImage) { success ->
-                                    // Handle update success or failure
-                                }
-                            } else {
-                                songDAO.add(songWithImage) { success ->
-                                    // Handle add success or failure
-                                }
-                            }
-                        }
-                    } else {
-                        if (song != null) {
-                            songDAO.update(songToSave) { success ->
-                                // Handle update success or failure
-                            }
-                        } else {
-                            songDAO.add(songToSave) { success ->
-                                // Handle add success or failure
-                            }
-                        }
-                    }
-                    navController.navigate("main")
+                    saveOrUpdateSong(viewModel, song, songToSave, navController)
                 }
             },
             modifier = Modifier
@@ -261,6 +222,27 @@ fun SongRegisterScreen(
                 fontWeight = FontWeight.W400,
                 fontFamily = FontFamily.SansSerif
             )
+        }
+    }
+}
+
+private fun saveOrUpdateSong(
+    viewModel: SongViewModel,
+    existingSong: Song?,
+    songToSave: Song,
+    navController: NavController
+) {
+    if (existingSong != null) {
+        viewModel.updateSong(songToSave) { success ->
+            if (success) {
+                navController.navigate("main")
+            }
+        }
+    } else {
+        viewModel.addSong(songToSave) { success ->
+            if (success) {
+                navController.navigate("main")
+            }
         }
     }
 }
