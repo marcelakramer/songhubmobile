@@ -28,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -39,6 +40,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.songhub.DAO.UserDAO
 import com.example.songhub.R
 
@@ -46,6 +48,7 @@ import com.example.songhub.R
 @Composable
 fun MainLayout(title: String, navController: NavController, content: @Composable () -> Unit) {
     val expanded = remember { mutableStateOf(false) }
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
 
     Scaffold(
         containerColor = Color(0xFF040723),
@@ -148,7 +151,7 @@ fun MainLayout(title: String, navController: NavController, content: @Composable
                                 painter = painterResource(id = R.drawable.home),
                                 contentDescription = "Home",
                                 modifier = Modifier.size(30.dp),
-                                tint = Color.White
+                                tint = if (navBackStackEntry?.destination?.route === "main") Color(0xFFAAA1FF) else Color.White
                             )
                         }
                         IconButton(onClick = { navController.navigate("addSong") }) {
@@ -156,7 +159,7 @@ fun MainLayout(title: String, navController: NavController, content: @Composable
                                 painter = painterResource(id = R.drawable.add_song),
                                 contentDescription = "Add Song",
                                 modifier = Modifier.size(30.dp),
-                                tint = Color.White
+                                tint = if (navBackStackEntry?.destination?.route === "addSong?songJson={songJson}") Color(0xFFAAA1FF) else Color.White
                             )
                         }
                         IconButton(onClick = { navController.navigate("favorites") }) {
@@ -164,7 +167,7 @@ fun MainLayout(title: String, navController: NavController, content: @Composable
                                 painter = painterResource(id = R.drawable.favorites),
                                 contentDescription = "Favorites",
                                 modifier = Modifier.size(30.dp),
-                                tint = Color.White
+                                tint = if (navBackStackEntry?.destination?.route === "favorites") Color(0xFFAAA1FF) else Color.White
                             )
                         }
                         IconButton(onClick = { navController.navigate("searchsong") }) {
@@ -172,7 +175,7 @@ fun MainLayout(title: String, navController: NavController, content: @Composable
                                 painter = painterResource(id = R.drawable.search),
                                 contentDescription = "Search online",
                                 modifier = Modifier.size(30.dp),
-                                tint = Color.White
+                                tint = if (navBackStackEntry?.destination?.route === "searchsong") Color(0xFFAAA1FF) else Color.White
                             )
                         }
                     }
