@@ -56,8 +56,6 @@ fun SongRegisterScreen(
     var album by rememberSaveable { mutableStateOf(song?.album ?: "") }
     var duration by rememberSaveable { mutableStateOf(song?.duration ?: "") }
     var year by rememberSaveable { mutableStateOf(song?.year ?: "") }
-    var snackbarHostState = remember { SnackbarHostState() }
-    val coroutineScope = rememberCoroutineScope()
 
     var snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
