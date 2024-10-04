@@ -110,20 +110,19 @@ fun SearchSong(modifier: Modifier = Modifier, navController: NavController) {
                 SearchMusicCard(track = track, navController = navController, userId = userId, snackbarHostState)
             }
         }
-
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier = Modifier.fillMaxWidth(),
-            snackbar = { data ->
-                Snackbar(
-                    snackbarData = data,
-                    shape = RoundedCornerShape(8.dp),
-                    containerColor = Color(0xFF212EC0),
-                    contentColor = Color.White,
-                )
-            }
-        )
     }
+    SnackbarHost(
+        hostState = snackbarHostState,
+        modifier = Modifier.fillMaxWidth(),
+        snackbar = { data ->
+            Snackbar(
+                snackbarData = data,
+                shape = RoundedCornerShape(8.dp),
+                containerColor = Color(0xFF212EC0),
+                contentColor = Color.White,
+            )
+        }
+    )
 }
 
 @Composable
