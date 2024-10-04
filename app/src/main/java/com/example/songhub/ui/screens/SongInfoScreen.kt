@@ -232,29 +232,6 @@ fun SongInfoScreen(
             if (song?.isLocal == true) {
                 colorF = Color(0xFF9B3EFF).copy(alpha = 0.5f)
             }
-            OutlinedButton(
-                onClick = { },
-                    colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = Color.Transparent,
-                    contentColor = colorF
-                ),
-                border = BorderStroke(1.dp, Color(0xFF9B3EFF)),
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier
-                    .width(140.dp)
-                    .height(45.dp)
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.heart),
-                    contentDescription = "Favorite Icon",
-                    tint = colorF,
-                    modifier = Modifier
-                        .size(24.dp)
-                        .padding(end = 4.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(text = "Favorite", color = colorF)
-            }
 
             OutlinedButton(
                 onClick = {
