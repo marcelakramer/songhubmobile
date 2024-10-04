@@ -44,6 +44,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import kotlinx.coroutines.launch
 
 fun isUrl(id: String): Boolean {
     val urlPattern = Regex(
@@ -66,6 +67,9 @@ fun SongInfoScreen(
     val songViewModel = koinViewModel<SongViewModel>()
     val userDAO = UserDAO()
     val user = UserSession.loggedInUser
+    var snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+
 
     val songs = mutableListOf<String>().apply { add(id) }
     val context = LocalContext.current
@@ -86,6 +90,19 @@ fun SongInfoScreen(
     }
 
     val scrollState = rememberScrollState()
+
+    SnackbarHost(
+        hostState = snackbarHostState,
+        modifier = Modifier.fillMaxWidth(),
+        snackbar = { data ->
+            Snackbar(
+                snackbarData = data,
+                shape = RoundedCornerShape(8.dp),
+                containerColor = Color(0xFF212EC0),
+                contentColor = Color.White,
+            )
+        }
+    )
 
     IconButton(
         onClick = { navController.navigate("main") },
@@ -325,6 +342,9 @@ fun SongInfoScreen(
                                             songViewModel.deleteSongByTitle(it.title) { success ->
                                                 if (success) {
                                                     navController.navigate("main")
+                                                    coroutineScope.launch {
+                                                        snackbarHostState.showSnackbar("Song deleted from library.")
+                                                    }
                                                 }
                                             }
                                         }
@@ -347,6 +367,6 @@ fun SongInfoScreen(
                     }
                 }
             }
-            }
+        }
     }
 }
