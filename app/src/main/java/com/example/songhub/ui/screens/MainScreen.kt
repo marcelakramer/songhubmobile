@@ -33,6 +33,7 @@ import com.example.songhub.model.Song
 import com.example.songhub.model.User
 import com.example.songhub.model.UserSession
 import com.example.songhub.ui.viewmodel.SongViewModel
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,6 +44,7 @@ fun MainScreen(modifier: Modifier = Modifier, navController: NavController) {
     var userDAO = UserDAO()
     var songDAO = SongDAO()
     var songs = remember { mutableStateOf<List<Song>>(emptyList()) }
+    var snackbarHostState = remember { SnackbarHostState() }
 
     val songViewModel = koinViewModel<SongViewModel>()
 
@@ -71,7 +73,7 @@ fun MainScreen(modifier: Modifier = Modifier, navController: NavController) {
         ) {
             items(songs.value) { item ->
                 if (user != null) {
-                    MusicCard(item, navController, user)
+                    MusicCard(item, navController, user, snackbarHostState)
                 }
             }
         }
@@ -91,12 +93,26 @@ fun MainScreen(modifier: Modifier = Modifier, navController: NavController) {
             )
         }
     }
+
+    SnackbarHost(
+        hostState = snackbarHostState,
+        modifier = Modifier.fillMaxWidth(),
+        snackbar = { data ->
+            Snackbar(
+                snackbarData = data,
+                shape = RoundedCornerShape(8.dp),
+                containerColor = Color(0xFF212EC0),
+                contentColor = Color.White,
+            )
+        }
+    )
 }
 
 @Composable
-fun MusicCard(item: Song, navController: NavController, user: User) {
+fun MusicCard(item: Song, navController: NavController, user: User, snackbarHostState: SnackbarHostState) {
     var userDAO = UserDAO()
     val encodedUrl = Uri.encode(item.id)
+    val coroutineScope = rememberCoroutineScope()
 
     val route = if (item.isLocal) item.id else encodedUrl
 
@@ -189,14 +205,18 @@ fun MusicCard(item: Song, navController: NavController, user: User) {
                                 userDAO.removeFromFavoriteSongs(currentUser.username, trackUrl) { success ->
                                     if (success) {
                                         isFavorited.value = false
-                                        println("Song removed from favorites")
+                                        coroutineScope.launch {
+                                            snackbarHostState.showSnackbar("Song removed from Favorites.")
+                                        }
                                     }
                                 }
                             } else {
                                 userDAO.addToFavoriteSongs(currentUser.username, trackUrl) { success ->
                                     if (success) {
                                         isFavorited.value = true
-                                        println("Song added to favorites")
+                                        coroutineScope.launch {
+                                            snackbarHostState.showSnackbar("Song added to Favorites.")
+                                        }
                                     }
                                 }
                             }

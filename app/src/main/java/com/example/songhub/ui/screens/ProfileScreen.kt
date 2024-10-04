@@ -66,8 +66,10 @@ fun ProfileScreen(
     val userDAO = UserDAO()
     val user = UserSession.loggedInUser
     val imageBitmap = remember { mutableStateOf<Bitmap?>(null) }
+    val coroutineScope = rememberCoroutineScope()
 
     var showDialog by remember { mutableStateOf(false) }
+    var snackbarHostState = remember { SnackbarHostState() }
 
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -308,6 +310,9 @@ fun ProfileScreen(
                                                     )
                                                     UserSession.loggedInUser = newUser
                                                     navController.navigate("profile")
+                                                    coroutineScope.launch {
+                                                        snackbarHostState.showSnackbar("Profile updated.")
+                                                    }
                                                 } else {
                                                     navController.navigate("main")
                                                 }
@@ -334,6 +339,9 @@ fun ProfileScreen(
                                         )
                                         UserSession.loggedInUser = newUser
                                         navController.navigate("profile")
+                                        coroutineScope.launch {
+                                            snackbarHostState.showSnackbar("Profile updated.")
+                                        }
                                     } else {
                                         navController.navigate("main")
                                     }
@@ -375,6 +383,19 @@ fun ProfileScreen(
             Text(text = "No user logged in", fontSize = 36.sp, color = Color.Red)
         }
     }
+
+    SnackbarHost(
+        hostState = snackbarHostState,
+        modifier = Modifier.fillMaxWidth(),
+        snackbar = { data ->
+            Snackbar(
+                snackbarData = data,
+                shape = RoundedCornerShape(8.dp),
+                containerColor = Color(0xFF212EC0),
+                contentColor = Color.White,
+            )
+        }
+    )
 }
 
 private fun getImageUri(context: Context, bitmap: Bitmap): Uri? {

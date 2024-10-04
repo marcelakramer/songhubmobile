@@ -48,6 +48,7 @@ fun FavoritesScreen(modifier: Modifier = Modifier, navController: NavController)
     var userDAO = UserDAO()
     var songDAO = SongDAO()
     var songs = remember { mutableStateOf<List<Song>>(emptyList()) }
+    var snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
         if (user != null) {
@@ -70,7 +71,7 @@ fun FavoritesScreen(modifier: Modifier = Modifier, navController: NavController)
         ) {
             items(songs.value) { item ->
                 if (user != null) {
-                    FavoritesMusicCard(item, navController, user)
+                    FavoritesMusicCard(item, navController, user, snackbarHostState)
                 }
             }
         }
@@ -88,12 +89,27 @@ fun FavoritesScreen(modifier: Modifier = Modifier, navController: NavController)
             )
         }
     }
+
+    SnackbarHost(
+        hostState = snackbarHostState,
+        modifier = Modifier.fillMaxWidth(),
+        snackbar = { data ->
+            Snackbar(
+                snackbarData = data,
+                shape = RoundedCornerShape(8.dp),
+                containerColor = Color(0xFF212EC0),
+                contentColor = Color.White,
+            )
+        }
+    )
+
 }
 
 @Composable
-fun FavoritesMusicCard(item: Song, navController: NavController, user: User) {
+fun FavoritesMusicCard(item: Song, navController: NavController, user: User, snackbarHostState: SnackbarHostState) {
     var userDAO = UserDAO()
     val encodedUrl = Uri.encode(item.id)
+    val coroutineScope = rememberCoroutineScope()
 
     var isFavorited = remember { mutableStateOf(true) }
 
@@ -176,14 +192,19 @@ fun FavoritesMusicCard(item: Song, navController: NavController, user: User) {
                             userDAO.removeFromFavoriteSongs(currentUser.username, trackUrl) { success ->
                                 if (success) {
                                     isFavorited.value = false
-                                    println("Song removed from favorites")
+                                    navController.navigate("favorites")
+                                    coroutineScope.launch {
+                                        snackbarHostState.showSnackbar("Song removed from Favorites.")
+                                    }
                                 }
                             }
                         } else {
                             userDAO.addToFavoriteSongs(currentUser.username, trackUrl) { success ->
                                 if (success) {
                                     isFavorited.value = true
-                                    println("Song added to favorites")
+                                    coroutineScope.launch {
+                                        snackbarHostState.showSnackbar("Song added to Favorites.")
+                                    }
                                 }
                             }
                         }
@@ -193,15 +214,12 @@ fun FavoritesMusicCard(item: Song, navController: NavController, user: User) {
                     .size(40.dp)
                     .padding(0.dp)
             ) {
-                val iconResource = if (isFavorited.value) {
-                    R.drawable.heart_svgrepo_com
-                } else {
-                    R.drawable.heart_outline
-                }
+                val iconResource = R.drawable.heart_off_outline
+
                 Icon(
                     painter = painterResource(iconResource),
                     contentDescription = "Favorite",
-                    tint = Color(0xFF9B3EFF),
+                    tint = Color(0xFFF54D4D),
                     modifier = Modifier.size(22.dp)
                 )
             }

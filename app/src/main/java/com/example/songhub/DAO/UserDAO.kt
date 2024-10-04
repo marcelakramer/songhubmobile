@@ -443,6 +443,30 @@ class UserDAO {
             }
     }
 
+    fun isSongAdded(userId: String, trackUrl: String, callback: (Boolean) -> Unit) {
+        db.collection("users")
+            .whereEqualTo("username", userId)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                if (querySnapshot.isEmpty) {
+                    Log.e("Firestore", "No user found with username: $userId")
+                    callback(false)
+                    return@addOnSuccessListener
+                }
 
+                val userDoc = querySnapshot.documents.firstOrNull() ?: return@addOnSuccessListener
 
+                val mySongs = userDoc.get("mysongs") as? List<String> ?: emptyList()
+
+                if (trackUrl in mySongs) {
+                    callback(true)
+                } else {
+                    callback(false)
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firestore", "Error querying user by username", e)
+                callback(false)
+            }
+    }
 }

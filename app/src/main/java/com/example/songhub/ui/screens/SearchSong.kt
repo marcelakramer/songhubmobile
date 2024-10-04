@@ -39,12 +39,13 @@ fun SearchSong(modifier: Modifier = Modifier, navController: NavController) {
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
     var items by remember { mutableStateOf<List<Track>>(emptyList()) }
     val coroutineScope = rememberCoroutineScope()
+    var snackbarHostState = remember { SnackbarHostState() }
 
     val userId = UserSession.loggedInUser?.username ?: ""
 
     Column(
         modifier = modifier
-            .padding(25.dp, 15.dp)
+            .padding(vertical = 4.dp)
             .fillMaxSize()
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -77,7 +78,9 @@ fun SearchSong(modifier: Modifier = Modifier, navController: NavController) {
 
                             items = response.results.trackmatches.track
                         } catch (e: Exception) {
-                            Log.e("SearchSong", "Error fetching tracks: $e")
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar("Error searching songs.")
+                            }
                         }
                     }
                 }
@@ -104,16 +107,36 @@ fun SearchSong(modifier: Modifier = Modifier, navController: NavController) {
                 .weight(1f)
         ) {
             items(items) { track ->
-                SearchMusicCard(track = track, navController = navController, userId = userId)
+                SearchMusicCard(track = track, navController = navController, userId = userId, snackbarHostState)
             }
         }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.fillMaxWidth(),
+            snackbar = { data ->
+                Snackbar(
+                    snackbarData = data,
+                    shape = RoundedCornerShape(8.dp),
+                    containerColor = Color(0xFF212EC0),
+                    contentColor = Color.White,
+                )
+            }
+        )
     }
 }
 
 @Composable
-fun SearchMusicCard(track: Track, navController: NavController, userId: String) {
+fun SearchMusicCard(track: Track, navController: NavController, userId: String, snackbarHostState: SnackbarHostState) {
     val userDAO = UserDAO()
-    var isInMySongs by remember { mutableStateOf(false) }
+    var isInMySongs = remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(track.url) {
+        userDAO.isSongAdded(userId, track.url) { isAdded ->
+            isInMySongs.value = isAdded
+        }
+    }
 
     Card(
         modifier = Modifier
@@ -152,18 +175,40 @@ fun SearchMusicCard(track: Track, navController: NavController, userId: String) 
 
             IconButton(
                 onClick = {
-                    userDAO.addToMySongs(userId, track.url) { success ->
-                        if (success) {
-                            isInMySongs = !isInMySongs
+                    if (isInMySongs.value) {
+                        userDAO.removeFromMySongs(userId, track.url) { success ->
+                            if (success) {
+                                isInMySongs.value = false
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar("Song removed from library.")
+                                }
+                            } else {
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar("Failed to remove song.")
+                                }
+                            }
+                        }
+                    } else {
+                        userDAO.addToMySongs(userId, track.url) { success ->
+                            if (success) {
+                                isInMySongs.value = true
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar("Song added to library.")
+                                }
+                            } else {
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar("Failed to add song.")
+                                }
+                            }
                         }
                     }
                 },
                 modifier = Modifier.size(40.dp)
             ) {
                 Icon(
-                    painter = painterResource(if (isInMySongs) R.drawable.add_icon else R.drawable.add_icon),
+                    painter = painterResource(if (isInMySongs.value) R.drawable.close else R.drawable.add_icon),
                     contentDescription = "Add song",
-                    tint = Color(0xFF5EAF76),
+                    tint = Color(if (isInMySongs.value) 0xFFF54D4D else 0xFF5EAF76),
                     modifier = Modifier.size(22.dp)
                 )
             }

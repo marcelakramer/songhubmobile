@@ -22,11 +22,16 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -43,6 +48,8 @@ import com.example.songhub.DAO.SongDAO
 import com.example.songhub.R
 import com.example.songhub.model.Song
 import com.example.songhub.ui.viewmodel.SongViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import java.util.UUID
 
@@ -62,6 +69,8 @@ fun SongRegisterScreen(
     var album by rememberSaveable { mutableStateOf(song?.album ?: "") }
     var duration by rememberSaveable { mutableStateOf(song?.duration ?: "") }
     var year by rememberSaveable { mutableStateOf(song?.year ?: "") }
+    var snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
 
 
     val areFieldsFilled = title.isNotEmpty() && artist.isNotEmpty() && album.isNotEmpty() &&
@@ -203,7 +212,7 @@ fun SongRegisterScreen(
                         isLocal = true
                     )
 
-                    saveOrUpdateSong(viewModel, song, songToSave, navController)
+                    saveOrUpdateSong(viewModel, song, songToSave, navController, coroutineScope, snackbarHostState)
                 }
             },
             modifier = Modifier
@@ -224,24 +233,45 @@ fun SongRegisterScreen(
             )
         }
     }
+
+    SnackbarHost(
+        hostState = snackbarHostState,
+        modifier = Modifier.fillMaxWidth(),
+        snackbar = { data ->
+            Snackbar(
+                snackbarData = data,
+                shape = RoundedCornerShape(8.dp),
+                containerColor = Color(0xFF212EC0),
+                contentColor = Color.White,
+            )
+        }
+    )
 }
 
 private fun saveOrUpdateSong(
     viewModel: SongViewModel,
     existingSong: Song?,
     songToSave: Song,
-    navController: NavController
+    navController: NavController,
+    coroutineScope: CoroutineScope,
+    snackbarHostState: SnackbarHostState
 ) {
     if (existingSong != null) {
         viewModel.updateSong(songToSave) { success ->
             if (success) {
                 navController.navigate("main")
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar("Song info updated.")
+                }
             }
         }
     } else {
         viewModel.addSong(songToSave) { success ->
             if (success) {
                 navController.navigate("main")
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar("Song added to library.")
+                }
             }
         }
     }
