@@ -21,4 +21,7 @@ interface SongDAOLocal {
 
     @Query("DELETE FROM songs WHERE title = :title")
     fun deleteSongByTitle(title: String)
+
+    @Query("DELETE FROM songs WHERE id = :uri")
+    fun deleteSongByUri(uri: String)
 }

@@ -339,14 +339,38 @@ fun SongInfoScreen(
                                 OutlinedButton(
                                     onClick = {
                                         song?.let {
-                                            songViewModel.deleteSongByTitle(it.title) { success ->
-                                                if (success) {
-                                                    navController.navigate("main")
-                                                    coroutineScope.launch {
-                                                        snackbarHostState.showSnackbar("Song deleted from library.")
+                                            if(song!!.isLocal) {
+                                                Log.d("msg", "a gente brigou")
+                                                songViewModel.deleteSongByUri(it.id) { success ->
+                                                    if (success) {
+                                                        navController.navigate("main")
+                                                        coroutineScope.launch {
+                                                            snackbarHostState.showSnackbar("Song deleted from library.")
+                                                        }
                                                     }
                                                 }
+                                            } else {
+                                                if (user != null) {
+                                                    userDAO.isSongFavorited(user.username, song!!.id) { isFavorited ->
+                                                        if(isFavorited) {
+                                                            coroutineScope.launch {
+                                                                snackbarHostState.showSnackbar("Cannot delete a favorited song.")
+                                                            }
+                                                        } else {
+                                                            userDAO.removeFromMySongs(user.username, song!!.id) { success ->
+                                                                if (success) {
+                                                                    navController.navigate("main")
+                                                                    coroutineScope.launch {
+                                                                        snackbarHostState.showSnackbar("Song deleted from library.")
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+
+                                                }
                                             }
+
                                         }
                                         showConfirmationDialog = false
                                     },

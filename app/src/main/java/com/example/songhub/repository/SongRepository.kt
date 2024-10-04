@@ -31,4 +31,10 @@ class SongRepository(private val songDao: SongDAOLocal) {
             songDao.deleteSongByTitle(title)
         }
     }
+
+    suspend fun deleteSongByUri(uri: String) {
+        withContext(Dispatchers.IO) {
+            songDao.deleteSongByUri(uri)
+        }
+    }
 }

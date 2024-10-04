@@ -62,6 +62,17 @@ class SongViewModel(val repository: SongRepository) : ViewModel() {
         }
     }
 
+    fun deleteSongByUri(uri: String, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            try {
+                repository.deleteSongByUri(uri)
+                onResult(true)
+            } catch (e: Exception) {
+                onResult(false)
+            }
+        }
+    }
+
     fun printAllSongs() {
         viewModelScope.launch {
             val songs = repository.getAllSongs()
