@@ -35,7 +35,15 @@ import com.example.songhub.ui.viewmodel.SongViewModel
 import com.google.gson.Gson
 import org.koin.androidx.compose.koinViewModel
 import android.content.Context
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 
 fun isUrl(id: String): Boolean {
     val urlPattern = Regex(
@@ -53,7 +61,11 @@ fun SongInfoScreen(
 ) {
     val songDAO = remember { SongDAO() }
     var song by remember { mutableStateOf<Song?>(null) }
+    var showConfirmationDialog by remember { mutableStateOf(false) }
+    var isFavorited by remember { mutableStateOf(false) }
     val songViewModel = koinViewModel<SongViewModel>()
+    val userDAO = UserDAO()
+    val user = UserSession.loggedInUser
 
     val songs = mutableListOf<String>().apply { add(id) }
     val context = LocalContext.current
@@ -220,61 +232,10 @@ fun SongInfoScreen(
             if (song?.isLocal == true) {
                 colorF = Color(0xFF9B3EFF).copy(alpha = 0.5f)
             }
-            OutlinedButton(
-                onClick = { },
-                    colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = Color.Transparent,
-                    contentColor = colorF
-                ),
-                border = BorderStroke(1.dp, Color(0xFF9B3EFF)),
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier
-                    .width(140.dp)
-                    .height(45.dp)
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.heart),
-                    contentDescription = "Favorite Icon",
-                    tint = colorF,
-                    modifier = Modifier
-                        .size(24.dp)
-                        .padding(end = 4.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(text = "Favorite", color = colorF)
-            }
 
             OutlinedButton(
                 onClick = {
-                    if (song?.isLocal == false) {
-                        song?.let {
-                            val userDAO = UserDAO()
-                            var user = UserSession.loggedInUser
-                            if (user != null) {
-                                userDAO.isSongFavorited(user.username, song!!.id) { isFavorited ->
-                                    if (isFavorited) {
-                                        Toast.makeText(context, "This song is favorited and cannot be removed.", Toast.LENGTH_LONG).show()
-                                    } else {
-                                        userDAO.removeFromMySongs(user.username, song!!.id) { removeSuccess ->
-                                            if (removeSuccess) {
-                                                navController.navigate("main")
-                                            } else {
-                                                println("Failed to remove song from My Songs.")
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        song?.let {
-                            songViewModel.deleteSongByTitle(it.title) { success ->
-                                if(success) {
-                                    navController.navigate("main")
-                                }
-                            }
-                        }
-                    }
+                    showConfirmationDialog = true
 
                 },
                 colors = ButtonDefaults.outlinedButtonColors(
@@ -298,6 +259,94 @@ fun SongInfoScreen(
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(text = "Delete", color = Color(0xFFF54D4D))
                 }
+            if (showConfirmationDialog) {
+                Dialog(
+                    onDismissRequest = { showConfirmationDialog = false },
+                    properties = DialogProperties(
+                        dismissOnBackPress = true,
+                        dismissOnClickOutside = true
+                    )
+                ) {
+                    Card(
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFF040723)
+                        ),
+                        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 8.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .padding(24.dp)
+                                .fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "Delete song",
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Text(
+                                text = "Are you sure you want to delete the song?",
+                                fontSize = 16.sp,
+                                color = Color.White,
+                                textAlign = TextAlign.Center
+                            )
+
+                            Spacer(modifier = Modifier.height(24.dp))
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceAround
+                            ) {
+                                OutlinedButton(
+                                    onClick = { showConfirmationDialog = false },
+                                    border = BorderStroke(1.dp, Color(0xFFF53E3E)),
+                                    colors = ButtonDefaults.outlinedButtonColors(
+                                        contentColor = Color(0xFFF53E3E),
+                                        containerColor = Color.Transparent
+                                    ),
+                                    shape = RoundedCornerShape(8.dp),
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .padding(vertical = 8.dp)
+                                ) {
+                                    Text("No")
+                                }
+
+                                Spacer(modifier = Modifier.width(16.dp))
+
+                                OutlinedButton(
+                                    onClick = {
+                                        song?.let {
+                                            songViewModel.deleteSongByTitle(it.title) { success ->
+                                                if (success) {
+                                                    navController.navigate("main")
+                                                }
+                                            }
+                                        }
+                                        showConfirmationDialog = false
+                                    },
+                                    border = BorderStroke(1.dp, Color(0xFF0BC163)),
+                                    colors = ButtonDefaults.outlinedButtonColors(
+                                        contentColor = Color(0xFF0BC163),
+                                        containerColor = Color.Transparent
+                                    ),
+                                    shape = RoundedCornerShape(8.dp),
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .padding(vertical = 8.dp)
+                                ) {
+                                    Text("Yes")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             }
     }
 }
