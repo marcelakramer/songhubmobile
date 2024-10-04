@@ -91,19 +91,6 @@ fun SongInfoScreen(
 
     val scrollState = rememberScrollState()
 
-    SnackbarHost(
-        hostState = snackbarHostState,
-        modifier = Modifier.fillMaxWidth(),
-        snackbar = { data ->
-            Snackbar(
-                snackbarData = data,
-                shape = RoundedCornerShape(8.dp),
-                containerColor = Color(0xFF212EC0),
-                contentColor = Color.White,
-            )
-        }
-    )
-
     IconButton(
         onClick = { navController.navigate("main") },
         modifier = Modifier.size(24.dp)
@@ -393,4 +380,17 @@ fun SongInfoScreen(
             }
         }
     }
+
+    SnackbarHost(
+        hostState = snackbarHostState,
+        modifier = Modifier.fillMaxWidth(),
+        snackbar = { data ->
+            Snackbar(
+                snackbarData = data,
+                shape = RoundedCornerShape(8.dp),
+                containerColor = Color(0xFF212EC0),
+                contentColor = Color.White,
+            )
+        }
+    )
 }
