@@ -37,4 +37,9 @@ class SongRepository(private val songDao: SongDAOLocal) {
             songDao.deleteSongByUri(uri)
         }
     }
+    suspend fun updateSong(song: Song) {
+        withContext(Dispatchers.IO) {
+            songDao.update(song)
+        }
+    }
 }

@@ -57,10 +57,10 @@ fun SongRegisterScreen(
     var duration by rememberSaveable { mutableStateOf(song?.duration ?: "") }
     var year by rememberSaveable { mutableStateOf(song?.year ?: "") }
 
-    var snackbarHostState = remember { SnackbarHostState() }
-    val coroutineScope = rememberCoroutineScope()
-
     val validationErrors = remember { mutableStateOf(SongValidationErrors()) }
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
 
     Column(
         modifier = modifier
@@ -363,9 +363,14 @@ private fun saveOrUpdateSong(
     if (existingSong != null) {
         viewModel.updateSong(songToSave) { success ->
             if (success) {
-                navController.navigate("main")
+                navController.navigate("main") // Navega somente se a atualização for bem-sucedida
                 coroutineScope.launch {
                     snackbarHostState.showSnackbar("Song info updated.")
+                }
+            } else {
+                // Lidar com a falha na atualização (ex: exibir Snackbar de erro)
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar("Failed to update song.")
                 }
             }
         }

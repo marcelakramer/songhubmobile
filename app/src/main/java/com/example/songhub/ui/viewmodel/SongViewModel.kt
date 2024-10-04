@@ -1,5 +1,6 @@
 package com.example.songhub.ui.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.songhub.model.Song
@@ -21,10 +22,13 @@ class SongViewModel(val repository: SongRepository) : ViewModel() {
 
     fun updateSong(song: Song, onResult: (Boolean) -> Unit) {
         viewModelScope.launch {
+            Log.d("SongViewModel", "Updating song: $song")
             try {
-                repository.insertSong(song)
+                repository.updateSong(song)
+                Log.d("SongViewModel", "Song updated successfully!")
                 onResult(true)
             } catch (e: Exception) {
+                Log.e("SongViewModel", "Error updating song: ${e.message}")
                 onResult(false)
             }
         }
