@@ -35,7 +35,15 @@ import com.example.songhub.ui.viewmodel.SongViewModel
 import com.google.gson.Gson
 import org.koin.androidx.compose.koinViewModel
 import android.content.Context
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 
 fun isUrl(id: String): Boolean {
     val urlPattern = Regex(
@@ -54,7 +62,10 @@ fun SongInfoScreen(
     val songDAO = remember { SongDAO() }
     var song by remember { mutableStateOf<Song?>(null) }
     var showConfirmationDialog by remember { mutableStateOf(false) }
+    var isFavorited by remember { mutableStateOf(false) }
     val songViewModel = koinViewModel<SongViewModel>()
+    val userDAO = UserDAO()
+    val user = UserSession.loggedInUser
 
     val songs = mutableListOf<String>().apply { add(id) }
     val context = LocalContext.current
@@ -272,55 +283,92 @@ fun SongInfoScreen(
                 Text(text = "Delete", color = Color(0xFFF54D4D))
                 }
             if (showConfirmationDialog) {
-                AlertDialog(
-                    onDismissRequest = { showConfirmationDialog = false }, // Fecha o modal se clicar fora
-                    title = { Text(text = "Confirm Deletion") },
-                    text = { Text("Are you sure you want to delete this song? This action cannot be undone.") },
-                    confirmButton = {
-                        TextButton(
-                            onClick = {
-                                // Realiza a ação de deletar a música
-                                if (song?.isLocal == false) {
-                                    song?.let {
-                                        val userDAO = UserDAO()
-                                        var user = UserSession.loggedInUser
-                                        if (user != null) {
-                                            userDAO.isSongFavorited(user.username, song!!.id) { isFavorited ->
-                                                if (isFavorited) {
-                                                    Toast.makeText(context, "This song is favorited and cannot be removed.", Toast.LENGTH_LONG).show()
-                                                } else {
-                                                    userDAO.removeFromMySongs(user.username, song!!.id) { removeSuccess ->
-                                                        if (removeSuccess) {
-                                                            navController.navigate("main")
-                                                        } else {
-                                                            println("Failed to remove song from My Songs.")
-                                                        }
-                                                    }
+                Dialog(
+                    onDismissRequest = { showConfirmationDialog = false },
+                    properties = DialogProperties(
+                        dismissOnBackPress = true,
+                        dismissOnClickOutside = true
+                    )
+                ) {
+                    Card(
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFF040723)
+                        ),
+                        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 8.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .padding(24.dp)
+                                .fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "Delete song",
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Text(
+                                text = "Are you sure you want to delete the song?",
+                                fontSize = 16.sp,
+                                color = Color.White,
+                                textAlign = TextAlign.Center
+                            )
+
+                            Spacer(modifier = Modifier.height(24.dp))
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceAround
+                            ) {
+                                OutlinedButton(
+                                    onClick = { showConfirmationDialog = false },
+                                    border = BorderStroke(1.dp, Color(0xFFF53E3E)),
+                                    colors = ButtonDefaults.outlinedButtonColors(
+                                        contentColor = Color(0xFFF53E3E),
+                                        containerColor = Color.Transparent
+                                    ),
+                                    shape = RoundedCornerShape(8.dp),
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .padding(vertical = 8.dp)
+                                ) {
+                                    Text("No")
+                                }
+
+                                Spacer(modifier = Modifier.width(16.dp))
+
+                                OutlinedButton(
+                                    onClick = {
+                                        song?.let {
+                                            songViewModel.deleteSongByTitle(it.title) { success ->
+                                                if (success) {
+                                                    navController.navigate("main")
                                                 }
                                             }
                                         }
-                                    }
-                                } else {
-                                    song?.let {
-                                        songViewModel.deleteSongByTitle(it.title) { success ->
-                                            if (success) {
-                                                navController.navigate("main")
-                                            }
-                                        }
-                                    }
+                                        showConfirmationDialog = false
+                                    },
+                                    border = BorderStroke(1.dp, Color(0xFF0BC163)),
+                                    colors = ButtonDefaults.outlinedButtonColors(
+                                        contentColor = Color(0xFF0BC163),
+                                        containerColor = Color.Transparent
+                                    ),
+                                    shape = RoundedCornerShape(8.dp),
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .padding(vertical = 8.dp)
+                                ) {
+                                    Text("Yes")
                                 }
-                                showConfirmationDialog = false // Fecha o modal após a ação
                             }
-                        ) {
-                            Text("Delete", color = Color.Red)
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = { showConfirmationDialog = false }) {
-                            Text("Cancel")
                         }
                     }
-                )
+                }
             }
             }
     }
