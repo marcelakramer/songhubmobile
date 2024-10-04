@@ -24,6 +24,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.example.songhub.DAO.SongDAO
@@ -65,20 +66,63 @@ fun FavoritesScreen(modifier: Modifier = Modifier, navController: NavController)
     }
 
 
-    Box(modifier = modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
         LazyColumn(
-            modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter)
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight()
+                .align(Alignment.TopCenter)
         ) {
-            items(songs.value) { item ->
-                if (user != null) {
-                    FavoritesMusicCard(item, navController, user, snackbarHostState)
+            if (songs.value.isNotEmpty()) {
+                items(songs.value) { item ->
+                    if (user != null) {
+                        FavoritesMusicCard(item, navController, user, snackbarHostState)
+                    }
+                }
+            } else {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillParentMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.heart_off_outline),
+                                contentDescription = "No songs",
+                                tint = Color.White.copy(alpha = 0.5f),
+                                modifier = Modifier.size(85.dp)
+                            )
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Text(
+                                text = "You have no favorite songs.",
+                                color = Color.White.copy(alpha = 0.5f),
+                                fontSize = 20.sp,
+                                fontFamily = FontFamily.SansSerif,
+                                fontWeight = FontWeight.W500,
+                                modifier = Modifier
+                                    .padding(vertical = 8.dp)
+                                    .fillMaxWidth(),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
                 }
             }
         }
 
         FloatingActionButton(
             onClick = { navController.navigate("addSong") },
-            modifier = Modifier.size(65.dp).align(Alignment.BottomEnd),
+            modifier = Modifier
+                .size(65.dp)
+                .align(Alignment.BottomEnd),
             containerColor = Color(0xFFAAA1FF)
         ) {
             Icon(
