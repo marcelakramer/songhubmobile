@@ -24,6 +24,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.example.songhub.DAO.SongDAO
@@ -65,15 +66,54 @@ fun MainScreen(modifier: Modifier = Modifier, navController: NavController) {
         }
     }
 
-    Box(modifier = modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
+                .fillMaxHeight()
                 .align(Alignment.TopCenter)
         ) {
-            items(songs.value) { item ->
-                if (user != null) {
-                    MusicCard(item, navController, user, snackbarHostState)
+            if (songs.value.isNotEmpty()) {
+                items(songs.value) { item ->
+                    if (user != null) {
+                        MusicCard(item, navController, user, snackbarHostState)
+                    }
+                }
+            } else {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillParentMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.music_note_off),
+                                contentDescription = "No songs",
+                                tint = Color.White.copy(alpha = 0.5f),
+                                modifier = Modifier.size(85.dp)
+                            )
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Text(
+                                text = "Your library is empty. Add or search a song.",
+                                color = Color.White.copy(alpha = 0.5f),
+                                fontSize = 20.sp,
+                                fontFamily = FontFamily.SansSerif,
+                                fontWeight = FontWeight.W500,
+                                modifier = Modifier
+                                    .padding(vertical = 8.dp)
+                                    .fillMaxWidth(),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -107,6 +147,7 @@ fun MainScreen(modifier: Modifier = Modifier, navController: NavController) {
         }
     )
 }
+
 
 @Composable
 fun MusicCard(item: Song, navController: NavController, user: User, snackbarHostState: SnackbarHostState) {
