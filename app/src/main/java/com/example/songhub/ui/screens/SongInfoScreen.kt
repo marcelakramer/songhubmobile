@@ -53,6 +53,7 @@ fun SongInfoScreen(
 ) {
     val songDAO = remember { SongDAO() }
     var song by remember { mutableStateOf<Song?>(null) }
+    var showConfirmationDialog by remember { mutableStateOf(false) }
     val songViewModel = koinViewModel<SongViewModel>()
 
     val songs = mutableListOf<String>().apply { add(id) }
@@ -246,35 +247,7 @@ fun SongInfoScreen(
 
             OutlinedButton(
                 onClick = {
-                    if (song?.isLocal == false) {
-                        song?.let {
-                            val userDAO = UserDAO()
-                            var user = UserSession.loggedInUser
-                            if (user != null) {
-                                userDAO.isSongFavorited(user.username, song!!.id) { isFavorited ->
-                                    if (isFavorited) {
-                                        Toast.makeText(context, "This song is favorited and cannot be removed.", Toast.LENGTH_LONG).show()
-                                    } else {
-                                        userDAO.removeFromMySongs(user.username, song!!.id) { removeSuccess ->
-                                            if (removeSuccess) {
-                                                navController.navigate("main")
-                                            } else {
-                                                println("Failed to remove song from My Songs.")
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        song?.let {
-                            songViewModel.deleteSongByTitle(it.title) { success ->
-                                if(success) {
-                                    navController.navigate("main")
-                                }
-                            }
-                        }
-                    }
+                    showConfirmationDialog = true
 
                 },
                 colors = ButtonDefaults.outlinedButtonColors(
@@ -298,6 +271,57 @@ fun SongInfoScreen(
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(text = "Delete", color = Color(0xFFF54D4D))
                 }
+            if (showConfirmationDialog) {
+                AlertDialog(
+                    onDismissRequest = { showConfirmationDialog = false }, // Fecha o modal se clicar fora
+                    title = { Text(text = "Confirm Deletion") },
+                    text = { Text("Are you sure you want to delete this song? This action cannot be undone.") },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                // Realiza a ação de deletar a música
+                                if (song?.isLocal == false) {
+                                    song?.let {
+                                        val userDAO = UserDAO()
+                                        var user = UserSession.loggedInUser
+                                        if (user != null) {
+                                            userDAO.isSongFavorited(user.username, song!!.id) { isFavorited ->
+                                                if (isFavorited) {
+                                                    Toast.makeText(context, "This song is favorited and cannot be removed.", Toast.LENGTH_LONG).show()
+                                                } else {
+                                                    userDAO.removeFromMySongs(user.username, song!!.id) { removeSuccess ->
+                                                        if (removeSuccess) {
+                                                            navController.navigate("main")
+                                                        } else {
+                                                            println("Failed to remove song from My Songs.")
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    song?.let {
+                                        songViewModel.deleteSongByTitle(it.title) { success ->
+                                            if (success) {
+                                                navController.navigate("main")
+                                            }
+                                        }
+                                    }
+                                }
+                                showConfirmationDialog = false // Fecha o modal após a ação
+                            }
+                        ) {
+                            Text("Delete", color = Color.Red)
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showConfirmationDialog = false }) {
+                            Text("Cancel")
+                        }
+                    }
+                )
+            }
             }
     }
 }
